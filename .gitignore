@@ -1,0 +1,16 @@
+# Backend
+STUVA-BE/.env
+STUVA-BE/vendor/
+
+# Frontend
+STUVA-FE/.env
+STUVA-FE/node_modules/
+STUVA-FE/dist/
+
+# Editor
+.vscode/
+.idea/
+
+# Operating System
+.DS_Store
+Thumbs.db
