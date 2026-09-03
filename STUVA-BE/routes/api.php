@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 
 // Public Route
@@ -23,4 +24,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/permissions', [PermissionController::class, 'store']); // Siswa
     Route::post('/permissions/{id}/parent-approve', [PermissionController::class, 'parentApproval']); // Ortu
     Route::post('/permissions/{id}/teacher-approve', [PermissionController::class, 'teacherApproval']); // Guru
+});
+
+
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+    Route::get('/students', [UserController::class, 'getStudents']);
+    Route::apiResource('/users', UserController::class);
 });
