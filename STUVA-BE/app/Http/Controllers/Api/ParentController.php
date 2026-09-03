@@ -35,7 +35,7 @@ class ParentController extends Controller
                     'last_location' => $lastLocation ? [
                         'latitude'     => $lastLocation->latitude,
                         'longitude'    => $lastLocation->longitude,
-                        'battery_level' => $lastLocation->battery_level,
+                        'battery_level'=> $lastLocation->battery_level,
                         'updated_at'   => $lastLocation->recorded_at,
                     ] : null,
                 ]
