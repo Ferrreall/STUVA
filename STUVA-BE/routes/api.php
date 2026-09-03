@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ParentController;
 use Illuminate\Http\Request;
 
 // Public Route
@@ -23,4 +25,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/permissions', [PermissionController::class, 'store']); // Siswa
     Route::post('/permissions/{id}/parent-approve', [PermissionController::class, 'parentApproval']); // Ortu
     Route::post('/permissions/{id}/teacher-approve', [PermissionController::class, 'teacherApproval']); // Guru
+});
+
+// Admin Routes (Butuh Token Sanctum)
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+    Route::get('/students', [UserController::class, 'getStudents']);
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::post('/users', [UserController::class, 'store']);
+    Route::post('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+});
+
+// Parent Routes (Butuh Token Sanctum)
+Route::middleware(['auth:sanctum'])->prefix('parent')->group(function () {
+    Route::get('/child-status', [ParentController::class, 'getChildStatus']);
+    Route::get('/permissions', [ParentController::class, 'getPendingPermissions']);
 });
