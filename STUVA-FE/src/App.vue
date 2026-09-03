@@ -1,7 +1,31 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+// App.vue berfungsi sebagai root component yang menampilkan router-view
 </script>
 
 <template>
-  <HelloWorld />
+  <div id="app">
+    <router-view />
+  </div>
 </template>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+    'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+</style>
