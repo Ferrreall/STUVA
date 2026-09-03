@@ -93,4 +93,86 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    // Detail 1 User
+    public function show($id)
+    {
+        try {
+            $user = User::with('student:id,name,class_name')->findOrFail($id);
+
+            return response()->json([
+                'status' => 'success',
+                'data'   => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'User tidak ditemukan'
+            ], 440);
+        }
+    }
+
+    // Update Data User
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'name'       => 'required|string|max:255',
+            'username'   => 'required|string|max:255|unique:users,username,' . $id,
+            'email'      => 'required|string|email|max:255|unique:users,email,' . $id,
+            'password'   => 'nullable|string|min:8', // Opsional, diisi kalau mau ganti password
+            'role'       => 'required|in:siswa,ortu,guru',
+            'class_name' => 'required_if:role,siswa|nullable|string|max:255',
+            'student_id' => 'required_if:role,ortu|nullable|exists:users,id',
+        ]);
+
+        try {
+            $dataToUpdate = [
+                'name'       => $validated['name'],
+                'username'   => $validated['username'],
+                'email'      => $validated['email'],
+                'role'       => $validated['role'],
+                'class_name' => $request->role === 'siswa' ? $validated['class_name'] : null,
+                'student_id' => $request->role === 'ortu' ? $validated['student_id'] : null,
+            ];
+
+            // Update password hanya jika diisi oleh Admin
+            if ($request->filled('password')) {
+                $dataToUpdate['password'] = Hash::make($validated['password']);
+            }
+
+            $user->update($dataToUpdate);
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Data user berhasil diperbarui',
+                'data'    => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Gagal memperbarui data user: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Hapus User
+    public function destroy($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $user->delete();
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'User berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Gagal menghapus user: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
