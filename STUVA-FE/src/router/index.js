@@ -1,10 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+
 // Import Views
 import Login from '../views/auth/login.vue'
 import DashboardSiswa from '../views/siswa/DashboardSiswa.vue'
 import DashboardGuru from '../views/guru/Dashboard.vue'
 import DashboardOrtu from '../views/ortu/DashboardOrtu.vue'
+
+
 
 const routes = [
   {
@@ -46,24 +49,10 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('token')
   const userRole = localStorage.getItem('role')
 
-  console.log('🛡️ Router Guard:', {
-    from: from.path,
-    to: to.path,
-    toMeta: to.meta,
-    isAuthenticated: !!isAuthenticated,
-    userRole: userRole
-  })
-
-  // Jika ke halaman yang butuh auth tapi belum login
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    console.log('❌ Not authenticated, redirecting to login')
-    return next('/login')
-  }
-
   // Jika role tidak match dengan yang diperlukan
   if (to.meta.role && userRole && userRole !== to.meta.role) {
-    console.log('❌ Role mismatch! Required:', to.meta.role, 'Current:', userRole)
-    console.log('🔄 Redirecting to correct dashboard...')
+    console.error(' Akses ditolak: Anda tidak memiliki izin untuk mengakses halaman ini.')
+    console.info(' Silakan login dengan akun yang sesuai untuk mengakses halaman ini.')
 
     if (userRole === 'siswa') {
       return next('/siswa/dashboard')
@@ -78,7 +67,7 @@ router.beforeEach((to, from, next) => {
 
   // Jika sudah login, tidak boleh ke halaman login
   if (to.path === '/login' && isAuthenticated) {
-    console.log('✅ Already authenticated, redirecting to dashboard')
+    console.info('Already authenticated, redirecting to dashboard')
 
     if (userRole === 'siswa') {
       return next('/siswa/dashboard')
@@ -91,7 +80,7 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  console.log('✅ Access granted to:', to.path)
+  console.info(' Access granted to:', to.path)
   next()
 })
 
