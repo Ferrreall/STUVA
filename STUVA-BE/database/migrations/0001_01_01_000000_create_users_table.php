@@ -18,7 +18,7 @@ return new class extends Migration
         $table->string('email')->unique()->nullable();
         $table->timestamp('email_verified_at')->nullable();
         $table->string('password');
-        $table->enum('role', ['siswa', 'ortu', 'guru']);
+        $table->enum('role', ['siswa', 'ortu', 'guru', 'admin'])->default('siswa');
         $table->string('class_name')->nullable(); // Khusus siswa
         
         // Relasi Ortu -> Siswa (Ortu mengikat ke 1 ID Siswa)

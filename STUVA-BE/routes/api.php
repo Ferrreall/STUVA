@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ParentController;
+use App\Http\Controllers\Api\DashboardAdminController;
 use Illuminate\Http\Request;
 
 // Public Route
@@ -29,6 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Admin Routes (Butuh Token Sanctum)
 Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+
+    Route::get('/dashboard/overview', [DashboardAdminController::class, 'overview']);
+
     Route::get('/students', [UserController::class, 'getStudents']);
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{id}', [UserController::class, 'show']);
