@@ -58,6 +58,14 @@ class UserController extends Controller
     // Tambah User Baru (Siswa / Ortu / Guru)
     public function store(Request $request)
     {
+
+        if ($request->user()->role !== 'admin') {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Akses ditolak. Hanya Admin yang dapat menambahkan user baru.'
+            ], 403);
+        }
+
         // Validasi ditaruh DILUAR try-catch biar otomatis balikin 422 kalau input invalid
         $validated = $request->validate([
             'name'       => 'required|string|max:255',
@@ -121,7 +129,7 @@ class UserController extends Controller
             'username'   => 'required|string|max:255|unique:users,username,' . $id,
             'email'      => 'required|string|email|max:255|unique:users,email,' . $id,
             'password'   => 'nullable|string|min:8', // Opsional, diisi kalau mau ganti password
-            'role'       => 'required|in:siswa,ortu,guru',
+            'role'       => 'required|in:siswa,ortu,guru,admin',
             'class_name' => 'required_if:role,siswa|nullable|string|max:255',
             'student_id' => 'required_if:role,ortu|nullable|exists:users,id',
         ]);
