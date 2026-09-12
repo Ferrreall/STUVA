@@ -454,25 +454,65 @@
 }
 
 /* Color Palette Helper Classes */
-.text-green { color: #16a34a; }
-.text-green-dark { color: #15803d; }
-.bg-green { background-color: #22c55e; }
-.bg-green-light { background-color: #f0fdf4; }
+.text-green {
+  color: #16a34a;
+}
 
-.text-yellow { color: #ca8a04; }
-.text-yellow-dark { color: #a16207; }
-.bg-yellow-light { background-color: #fefce8; }
+.text-green-dark {
+  color: #15803d;
+}
 
-.text-blue { color: #2563eb; }
-.text-blue-dark { color: #1d4ed8; }
-.bg-blue-light { background-color: #eff6ff; }
+.bg-green {
+  background-color: #22c55e;
+}
 
-.text-red { color: #dc2626; }
-.text-red-dark { color: #b91c1c; }
-.bg-red { background-color: #ef4444; }
-.bg-red-light { background-color: #fef2f2; }
+.bg-green-light {
+  background-color: #f0fdf4;
+}
 
-.text-gray { color: #6b7280; }
+.text-yellow {
+  color: #ca8a04;
+}
+
+.text-yellow-dark {
+  color: #a16207;
+}
+
+.bg-yellow-light {
+  background-color: #fefce8;
+}
+
+.text-blue {
+  color: #2563eb;
+}
+
+.text-blue-dark {
+  color: #1d4ed8;
+}
+
+.bg-blue-light {
+  background-color: #eff6ff;
+}
+
+.text-red {
+  color: #dc2626;
+}
+
+.text-red-dark {
+  color: #b91c1c;
+}
+
+.bg-red {
+  background-color: #ef4444;
+}
+
+.bg-red-light {
+  background-color: #fef2f2;
+}
+
+.text-gray {
+  color: #6b7280;
+}
 
 /* Modal Overlay & Container */
 .modal-overlay {
@@ -491,8 +531,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -511,6 +556,7 @@
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -682,6 +728,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -720,7 +767,7 @@
     max-height: 95vh;
     border-radius: 16px 16px 0 0;
   }
-  
+
   .modal-overlay {
     align-items: flex-end;
     padding: 0;
@@ -896,4 +943,35 @@
 .request-time {
   font-size: 0.7rem;
   color: #9ca3af;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 12px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
 }
