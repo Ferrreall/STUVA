@@ -10,6 +10,15 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+
+        User::create([
+            'name' => 'Admin Utama',
+            'username' => 'admin',
+            'email' => 'admin@school.id',
+            'password' => Hash::make('password123'),
+            'role' => 'admin',
+        ]);
+
         // 1. Buat Account Guru
         $guru = User::create([
             'name' => 'Pak Guru Test',
@@ -38,5 +47,6 @@ class UserSeeder extends Seeder
             'role' => 'ortu',
             'student_id' => $siswa->id, // Mengikat Ortu ke Siswa
         ]);
+
     }
 }
