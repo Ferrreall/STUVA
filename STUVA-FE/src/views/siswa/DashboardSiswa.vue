@@ -58,8 +58,8 @@
       <!-- Hero Greeting -->
       <section class="hero-greeting col-12">
         <div>
-          <p class="hero-hi">Halo, {{ user.name.split(' ')[0] }} 👋</p>
-          <p class="hero-sub">Jangan lupa absen hari ini, ya!</p>
+<p class="hero-hi">{{ greeting }}, {{ user.name.split(' ')[0] }} 👋</p>
+<p class="hero-sub">{{ todayLabel }} — Jangan lupa absen hari ini, ya!</p>
         </div>
         <div class="hero-emoji">📚</div>
       </section>
@@ -489,6 +489,18 @@ const user = ref({
   name: authStore.user?.name || 'Siswa Test',
   username: authStore.user?.username || '1234567890',
   class_name: authStore.user?.class_name || 'XII RPL 1'
+})
+
+// greeting
+const greeting = computed(() => {
+  const h = new Date().getHours()
+  if (h < 11) return 'Selamat pagi'
+  if (h < 15) return 'Selamat siang'
+  if (h < 19) return 'Selamat sore'
+  return 'Selamat malam'
+})
+const todayLabel = new Date().toLocaleDateString('id-ID', {
+  weekday: 'long', day: 'numeric', month: 'long'
 })
 
 const attendanceStats = ref({
