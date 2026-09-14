@@ -67,7 +67,6 @@ class PermissionController extends Controller
 
         $permission = PermissionRequest::findOrFail($id);
 
-        // Validasi: Pastikan yang approve adalah Ortu dari siswa yang bersangkutan
         if ($user->student_id !== $permission->student_id) {
             return response()->json([
                 'message' => 'Akses ditolak. Anda bukan Orang Tua dari siswa ini.'
