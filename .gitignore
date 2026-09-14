@@ -6,6 +6,7 @@ STUVA-BE/vendor/
 STUVA-FE/.env
 STUVA-FE/node_modules/
 STUVA-FE/dist/
+STUVA-FE/.env
 
 # Editor
 .vscode/

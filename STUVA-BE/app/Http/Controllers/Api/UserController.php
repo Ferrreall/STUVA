@@ -93,7 +93,6 @@ class UserController extends Controller
                 'message' => 'User berhasil ditambahkan',
                 'data'    => $user
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status'  => 'error',
