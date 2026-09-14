@@ -1,57 +1,152 @@
-.profile-container {
-  min-height: 100vh;
-  background-color: #f9fafb;
-  padding-bottom: 80px;
+/* ============================================================
+   STUVA — Profil Siswa
+   Tema: "Aurora Candy" — sinkron penuh dengan DashboardSiswa
+============================================================ */
+
+/* ============================================================
+   DESIGN TOKENS
+   (dipasang di container + modal & toast yang di-teleport)
+============================================================ */
+.profile-container,
+.modal-overlay,
+.toast-notification {
+  --brand-900: #2e1065;
+  --brand-700: #6d28d9;
+  --brand-600: #7c3aed;
+  --brand-500: #8b5cf6;
+  --brand-400: #a78bfa;
+  --brand-100: #ede9fe;
+  --brand-50:  #f5f3ff;
+  --pink-500:  #ec4899;
+
+  --primary:       var(--brand-600);
+  --primary-light: var(--brand-400);
+  --primary-dark:  var(--brand-700);
+  --success: #10b981;
+  --danger:  #f43f5e;
+
+  --gray-50:  #fafafa;
+  --gray-100: #f4f4f5;
+  --gray-200: #e4e4e7;
+  --gray-300: #d4d4d8;
+  --gray-400: #a1a1aa;
+  --gray-500: #71717a;
+  --gray-700: #3f3f46;
+  --gray-900: #18181b;
+
+  --content-max: 800px; /* profil enak dibaca nggak terlalu lebar */
+
+  --radius-sm: 14px;
+  --radius-md: 20px;
+
+  --shadow-sm: 0 1px 2px rgba(46,16,101,.04), 0 4px 16px rgba(46,16,101,.05);
+  --shadow-md: 0 4px 12px rgba(46,16,101,.08), 0 14px 30px rgba(46,16,101,.08);
+  --shadow-lg: 0 12px 30px rgba(46,16,101,.16);
+  --shadow-xl: 0 24px 60px rgba(46,16,101,.22);
+
+  --transition: all .25s cubic-bezier(.4, 0, .2, 1);
 }
 
-/* Header */
+/* ============================================================
+   CONTAINER — aurora + fix margin collapse
+============================================================ */
+.profile-container {
+  min-height: 100vh;
+  padding-top: 10px; /* cegah margin header bocor → strip putih */
+  padding-bottom: 80px;
+  color: var(--gray-900);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: #f7f5ff;
+  background-image:
+    radial-gradient(640px 420px at -5% -8%,  rgba(167,139,250,.25), transparent 60%),
+    radial-gradient(720px 480px at 108% 6%,  rgba(244,114,182,.18), transparent 60%),
+    radial-gradient(680px 520px at 50% 115%, rgba(94,234,212,.16),  transparent 60%);
+}
+
+/* ============================================================
+   HEADER — floating pill, sama seperti dashboard
+============================================================ */
 .header {
-  background-color: #2563eb;
-  padding: 12px 16px;
-  color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
-  top: 0;
+  top: 10px;
   z-index: 100;
+  width: min(var(--content-max), calc(100% - 32px));
+  margin: 0 auto;
+  padding: 11px 14px;
+  color: #ffffff;
+  border-radius: 22px;
+  background: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 40%, var(--brand-600) 75%, var(--pink-500) 100%);
+  box-shadow: 0 10px 30px -8px rgba(109, 40, 217, .5);
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(244, 114, 182, .5);
+  filter: blur(42px);
+  left: -40px;
+  bottom: -80px;
+  pointer-events: none;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 85% -20%, rgba(103, 232, 249, .35) 0%, transparent 55%);
+  pointer-events: none;
 }
 
 .header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 800px;
-  margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .btn-back {
-  background: none;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  padding: 4px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  transition: background-color 0.2s;
+  background: rgba(255, 255, 255, .15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+  transition: var(--transition);
 }
 
 .btn-back:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, .28);
+  transform: translateX(-3px);
 }
+
+.btn-back:active { transform: scale(.92); }
 
 .header-title {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   margin: 0;
+  letter-spacing: -.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .18);
 }
 
-.header-spacer {
-  width: 32px;
-}
+.header-spacer { width: 38px; } /* = lebar btn-back, biar judul bener-bener center */
 
-/* Loading State */
-.loading-container {
+/* ============================================================
+   LOADING & ERROR STATE
+============================================================ */
+.loading-container,
+.error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -63,10 +158,11 @@
 .spinner-large {
   width: 48px;
   height: 48px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #2563eb;
+  border: 4px solid var(--brand-100);
+  border-top-color: var(--brand-600);
+  border-right-color: var(--pink-500);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin .8s cubic-bezier(.45, .15, .55, .85) infinite;
 }
 
 @keyframes spin {
@@ -74,85 +170,155 @@
 }
 
 .loading-text {
-  font-size: 0.938rem;
-  color: #6b7280;
+  font-size: .938rem;
+  color: var(--gray-500);
   margin: 0;
 }
 
-/* Error State */
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-  gap: 16px;
-}
-
-.icon-xl {
+/* ikon error jadi tile rose */
+.error-container .icon-xl {
   width: 64px;
   height: 64px;
+  padding: 18px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+  color: #e11d48;
 }
 
 .error-text {
-  font-size: 0.938rem;
-  color: #dc2626;
+  font-size: .938rem;
+  color: #be123c;
   margin: 0;
   text-align: center;
 }
 
-/* Main Content */
+/* ============================================================
+   MAIN CONTENT — animasi staggered
+============================================================ */
 .main-content {
-  max-width: 800px;
+  width: min(var(--content-max), 100%);
   margin: 0 auto;
-  padding: 16px;
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Avatar Section */
+.main-content > * {
+  animation: rise-in .5s cubic-bezier(.22, 1, .36, 1) both;
+}
+.main-content > *:nth-child(2) { animation-delay: .06s; }
+.main-content > *:nth-child(3) { animation-delay: .12s; }
+.main-content > *:nth-child(4) { animation-delay: .18s; }
+.main-content > *:nth-child(5) { animation-delay: .24s; }
+.main-content > *:nth-child(6) { animation-delay: .30s; }
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px); }
+}
+
+/* ============================================================
+   AVATAR HERO — kartu gradien + orb
+============================================================ */
 .avatar-section {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 16px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 36px 16px 30px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 40%, #9333ea 75%, #c026d3 100%);
+  color: #ffffff;
+  box-shadow: 0 14px 34px -10px rgba(109, 40, 217, .5);
+}
+
+.avatar-section::before {
+  content: '';
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: rgba(244, 114, 182, .45);
+  filter: blur(46px);
+  left: -50px;
+  bottom: -90px;
+  pointer-events: none;
+}
+
+.avatar-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 88% -10%, rgba(103, 232, 249, .3) 0%, transparent 55%);
+  pointer-events: none;
 }
 
 .avatar-large {
+  position: relative;
+  z-index: 1;
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  color: #ffffff;
+  background: #ffffff;
+  color: var(--brand-600);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
+  border: 3px solid rgba(255, 255, 255, .55);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
+}
+
+.avatar-large .icon-xl {
+  width: 44px;
+  height: 44px;
 }
 
 .profile-name {
+  position: relative;
+  z-index: 1;
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 4px 0;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .18);
 }
 
+/* role jadi pill glass */
 .profile-role {
-  font-size: 0.938rem;
-  color: #6b7280;
+  position: relative;
+  z-index: 1;
+  font-size: .8rem;
+  font-weight: 600;
+  color: #ffffff;
   margin: 0;
+  padding: 5px 16px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, .18);
+  border: 1px solid rgba(255, 255, 255, .3);
+  backdrop-filter: blur(8px);
 }
 
-/* Card */
+/* ============================================================
+   CARD — frosted glass
+============================================================ */
 .card {
-  background-color: #ffffff;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, .82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, .7);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .card-header {
@@ -163,32 +329,53 @@
 }
 
 .card-title {
-  font-size: 1rem;
+  font-size: .8rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: .07em;
   margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
+.card-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--pink-500), var(--brand-600));
+}
+
+/* title di dalam card-header nggak butuh margin bawah */
+.card-header .card-title { margin-bottom: 0; }
+
 .btn-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
-  border: none;
-  border-radius: 8px;
-  color: #6b7280;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-radius: 12px;
+  color: var(--brand-600);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
 
 .btn-icon:hover {
-  background-color: #e5e7eb;
-  color: #1f2937;
+  background: var(--brand-100);
+  transform: rotate(-8deg) scale(1.06);
 }
 
-/* Info List */
+.btn-icon:active { transform: scale(.92); }
+
+/* ============================================================
+   INFO LIST — ikon jadi tile warna
+============================================================ */
 .info-list {
   display: flex;
   flex-direction: column;
@@ -197,30 +384,53 @@
 
 .info-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--gray-200);
+  transition: var(--transition);
 }
+
+.info-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.info-item:hover .info-label { color: var(--brand-700); }
 
 .info-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #6b7280;
-  font-size: 0.875rem;
+  gap: 12px;
+  color: var(--gray-500);
+  font-size: .875rem;
   font-weight: 500;
   flex: 1;
+  transition: var(--transition);
+}
+
+/* tile ikon */
+.info-label .icon-sm {
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
 .info-value {
-  font-size: 0.875rem;
-  color: #1f2937;
+  font-size: .875rem;
+  color: var(--gray-900);
   font-weight: 600;
   text-align: right;
   flex: 1;
 }
 
-/* Edit Form */
+/* ============================================================
+   EDIT FORM — fokus violet
+============================================================ */
 .edit-form {
   display: flex;
   flex-direction: column;
@@ -230,36 +440,42 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .form-label {
-  font-size: 0.875rem;
+  font-size: .813rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-700);
 }
 
 .form-input,
 .form-textarea {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  color: #1f2937;
-  transition: all 0.2s;
+  padding: 11px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 12px;
+  font-size: .875rem;
+  font-family: inherit;
+  color: var(--gray-900);
+  background: #ffffff;
+  transition: border-color .2s ease, box-shadow .2s ease;
 }
+
+.form-input:hover,
+.form-textarea:hover { border-color: var(--brand-400); }
 
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, .15);
 }
 
 .form-textarea {
   resize: vertical;
-  font-family: inherit;
+  min-height: 80px;
+  line-height: 1.6;
 }
 
 .form-actions {
@@ -269,96 +485,137 @@
   padding-top: 8px;
 }
 
-/* Buttons */
+/* ============================================================
+   BUTTONS — gradien candy
+============================================================ */
 .btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
+  padding: 11px 22px;
+  border-radius: 12px;
+  font-size: .875rem;
+  font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s;
   border: none;
+  transition: transform .15s cubic-bezier(.34, 1.56, .64, 1),
+              box-shadow .2s ease,
+              background-color .2s ease;
+}
+
+.btn svg { transition: transform .25s cubic-bezier(.34, 1.56, .64, 1); }
+.btn:hover svg { transform: translateY(-2px) scale(1.1); }
+
+.btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn-primary {
-  background-color: #2563eb;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 45%, #d946ef 100%);
+  background-size: 150% 150%;
   color: #ffffff;
+  box-shadow: 0 8px 20px -6px rgba(124, 58, 237, .55);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #1d4ed8;
+  background-position: 100% 100%;
+  box-shadow: 0 12px 26px -6px rgba(124, 58, 237, .6);
+  transform: translateY(-2px);
 }
 
+.btn-primary:active:not(:disabled) { transform: translateY(0) scale(.96); }
+
 .btn-secondary {
-  background-color: #f3f4f6;
-  color: #374151;
+  background: #ffffff;
+  color: var(--gray-700);
+  border: 1.5px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
-  background-color: #e5e7eb;
+  background: var(--gray-50);
+  border-color: var(--gray-400);
+  transform: translateY(-2px);
 }
 
+.btn-secondary:active { transform: translateY(0) scale(.96); }
+
 .btn-outline {
-  background-color: transparent;
-  color: #2563eb;
-  border: 1px solid #2563eb;
+  background: transparent;
+  color: var(--brand-600);
+  border: 1.5px solid var(--brand-400);
 }
 
 .btn-outline:hover {
-  background-color: #eff6ff;
+  background: var(--brand-50);
+  border-color: var(--brand-600);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px -6px rgba(124, 58, 237, .35);
 }
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+.btn-outline:active { transform: scale(.96); }
 
-/* Badge */
+/* ============================================================
+   BADGE STATUS AKUN
+============================================================ */
 .badge {
   display: inline-block;
   padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-radius: 9999px;
+  font-size: .75rem;
+  font-weight: 700;
 }
 
 .badge-success {
-  background-color: #d1fae5;
+  background: #d1fae5;
   color: #065f46;
 }
 
 .badge-danger {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background: #ffe4e6;
+  color: #be123c;
 }
 
-/* Modal */
+/* ============================================================
+   MODAL — glassmorphism, sama seperti dashboard
+============================================================ */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(30, 10, 60, .45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 16px;
+  animation: fadeIn .25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .modal-container {
-  background-color: #ffffff;
-  border-radius: 16px;
+  background: #ffffff;
+  border-radius: 24px;
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(46, 16, 101, .05);
+  animation: slideUp .35s cubic-bezier(.34, 1.3, .64, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px) scale(.97); opacity: 0; }
+  to   { transform: translateY(0) scale(1);      opacity: 1; }
 }
 
 .modal-header {
@@ -366,32 +623,50 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--gray-100);
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, .95);
+  backdrop-filter: blur(8px);
+  z-index: 1;
+  border-radius: 24px 24px 0 0;
 }
 
 .modal-title {
   font-size: 1.125rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-weight: 800;
   margin: 0;
+  letter-spacing: -.02em;
+  background: linear-gradient(90deg, var(--brand-700), var(--pink-500));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .btn-close {
   background: none;
   border: none;
-  color: #6b7280;
+  color: var(--gray-500);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  padding: 6px;
+  border-radius: 8px;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-close:hover {
-  background-color: #f3f4f6;
+  background: #fff1f2;
+  color: #e11d48;
+  transform: rotate(90deg);
 }
 
 .modal-body {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .modal-footer {
@@ -399,93 +674,156 @@
   gap: 12px;
   justify-content: flex-end;
   padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--gray-100);
 }
 
-/* Toast */
+/* ============================================================
+   TOAST — chip ikon warna
+============================================================ */
 .toast-notification {
   position: fixed;
   top: 20px;
   right: 20px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, .95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow-xl);
   z-index: 2000;
   min-width: 300px;
-  animation: slideInRight 0.3s ease;
+  animation: slideInRight .35s cubic-bezier(.34, 1.3, .64, 1);
+  border: 1px solid rgba(46, 16, 101, .06);
 }
 
 @keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
 
 .toast-content {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: .875rem;
+  font-weight: 600;
 }
 
-.toast-notification.success {
-  border-left: 4px solid #22c55e;
-  color: #15803d;
+.toast-content .icon-sm {
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  flex-shrink: 0;
 }
 
-.toast-notification.success .icon-sm {
-  color: #22c55e;
-}
+.toast-notification.success { border-left: 4px solid #10b981; color: #047857; }
+.toast-notification.success .icon-sm { background: #d1fae5; color: #059669; }
 
-.toast-notification.error {
-  border-left: 4px solid #ef4444;
-  color: #b91c1c;
-}
+.toast-notification.error { border-left: 4px solid #f43f5e; color: #be123c; }
+.toast-notification.error .icon-sm { background: #ffe4e6; color: #e11d48; }
 
-.toast-notification.error .icon-sm {
-  color: #ef4444;
-}
+/* ============================================================
+   ICONS
+============================================================ */
+.icon-sm { width: 16px; height: 16px; }
+.icon-md { width: 20px; height: 20px; }
+.icon-xl { width: 64px; height: 64px; }
 
-/* Icons */
-.icon-sm {
-  width: 16px;
-  height: 16px;
-}
+/* ============================================================
+   COLOR UTILITIES — otomatis jadi tile di info-label
+============================================================ */
+.text-blue   { color: var(--brand-600); background: linear-gradient(135deg, #f5f3ff, #ddd6fe); }
+.text-green  { color: #059669; background: linear-gradient(135deg, #ecfdf5, #d1fae5); }
+.text-purple { color: #c026d3; background: linear-gradient(135deg, #fae8ff, #f5d0fe); }
+.text-orange { color: #b45309; background: linear-gradient(135deg, #fffbeb, #fef3c7); }
+.text-red    { color: #e11d48; }
 
-.icon-md {
-  width: 20px;
-  height: 20px;
-}
+/* ============================================================
+   SCROLLBAR & SELECTION
+============================================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #a78bfa; }
 
-/* Color Utilities */
-.text-blue { color: #2563eb; }
-.text-green { color: #22c55e; }
-.text-purple { color: #7c3aed; }
-.text-orange { color: #f59e0b; }
-.text-red { color: #dc2626; }
+::selection { background: #ddd6fe; color: #2e1065; }
 
+/* ============================================================
+   RESPONSIVE
+============================================================ */
 @media (max-width: 640px) {
   .info-item {
     flex-direction: column;
-    gap: 4px;
+    align-items: flex-start;
+    gap: 8px;
   }
-  
-  .info-value {
-    text-align: left;
+
+  .info-value { text-align: left; }
+
+  .form-actions { flex-direction: column; }
+  .btn { width: 100%; }
+
+  .modal-overlay { align-items: flex-end; padding: 0; }
+
+  .modal-container,
+  .modal-header { border-radius: 24px 24px 0 0; }
+
+  .toast-notification {
+    right: 12px;
+    left: 12px;
+    min-width: auto;
+    top: 12px;
   }
-  
-  .form-actions {
-    flex-direction: column;
+}
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
   }
-  
-  .btn {
-    width: 100%;
-  }
+}
+
+.main-content {
+  width: min(var(--content-max), 100%);
+  margin: 0 auto;
+  padding: 20px 16px;
+  display: flex;              /* balik ke flex biasa */
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== layout 2 kolom ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;         /* kolom kiri & kanan tinggi bebas */
+}
+
+.cards-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;               /* biar isi panjang (alamat dll) nggak overflow */
+}
+
+/* wrapper nggak ikut animasi, biar kartu yang animasi satuan */
+.main-content > .cards-grid { animation: none; }
+
+.cards-col > .card {
+  animation: rise-in .5s cubic-bezier(.22, 1, .36, 1) both;
+}
+.cards-col > .card:nth-child(1) { animation-delay: .12s; }
+.cards-col > .card:nth-child(2) { animation-delay: .18s; }
+.cards-col > .card:nth-child(3) { animation-delay: .24s; }
+
+@media (max-width: 1023px) {
+  .cards-grid { grid-template-columns: 1fr; }
 }

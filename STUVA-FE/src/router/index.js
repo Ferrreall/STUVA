@@ -2,13 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 
 // Import Views
-import Login from '../views/auth/login.vue'
+import Login from '../views/auth/Login.vue'
 import DashboardSiswa from '../views/siswa/DashboardSiswa.vue'
 import ProfileSiswa from '../views/siswa/ProfileSiswa.vue'
 import DashboardGuru from '../views/guru/DashboardGuru.vue'
-import ProfileGuru from '../views/guru/Profile.vue'
+import ProfileGuru from '../views/guru/ProfileGuru.vue'
 import DashboardOrtu from '../views/ortu/DashboardOrtu.vue'
-import DashboardAdmin from '../views/admin/Dashboard.vue'
+import DashboardAdmin from '../views/admin/DashboardAdmin.vue'
 
 
 

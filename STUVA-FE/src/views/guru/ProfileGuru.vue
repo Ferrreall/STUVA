@@ -26,21 +26,17 @@
       </button>
     </div>
 
-<!-- Profile Content -->
-<main v-else class="main-content">
-  <!-- Avatar Section -->
-  <section class="avatar-section">
-    <div class="avatar-large">
-      <User class="icon-xl" />
-    </div>
-    <h2 class="profile-name">{{ profile.name }}</h2>
-    <p class="profile-role">{{ roleLabel }}</p>
-  </section>
+    <!-- Profile Content -->
+    <main v-else class="main-content">
+      <!-- Avatar Section -->
+      <section class="avatar-section">
+        <div class="avatar-large">
+          <User class="icon-xl" />
+        </div>
+        <h2 class="profile-name">{{ profile.name }}</h2>
+        <p class="profile-role">{{ profile.role_display }}</p>
+      </section>
 
-  <!-- Dua Kolom Kartu -->
-  <div class="cards-grid">
-    <!-- Kolom Kiri: Kartu Tinggi -->
-    <div class="cards-col">
       <!-- Personal Info Card -->
       <section class="card">
         <div class="card-header">
@@ -158,10 +154,7 @@
           </div>
         </form>
       </section>
-    </div>
 
-    <!-- Kolom Kanan: Tumpukan Kartu Pendek -->
-    <div class="cards-col">
       <!-- Contact Info Card -->
       <section class="card">
         <h3 class="card-title">Kontak</h3>
@@ -242,19 +235,18 @@
           </div>
         </div>
       </section>
-    </div>
-  </div>
 
-  <!-- Change Password Section -->
-  <section class="card">
-    <h3 class="card-title">Ubah Password</h3>
-    
-    <button @click="showPasswordModal = true" class="btn btn-outline">
-      <Lock class="icon-sm" />
-      <span>Ganti Password</span>
-    </button>
-  </section>
-</main>
+      <!-- Change Password Section -->
+      <section class="card">
+        <h3 class="card-title">Ubah Password</h3>
+        
+        <button @click="showPasswordModal = true" class="btn btn-outline">
+          <Lock class="icon-sm" />
+          <span>Ganti Password</span>
+        </button>
+      </section>
+    </main>
+
     <!-- Password Modal -->
     <Teleport to="body">
       <div v-if="showPasswordModal" class="modal-overlay" @click="showPasswordModal = false">
@@ -325,7 +317,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import apiClient from '../../utils/api'
 import {
@@ -348,12 +340,6 @@ import {
   AlertTriangle,
   School
 } from 'lucide-vue-next'
-
-
-const roleLabel = computed(() => {
-  const r = profile.value.role || 'siswa'
-  return r.charAt(0).toUpperCase() + r.slice(1)  // "siswa" → "Siswa"
-})
 
 const router = useRouter()
 

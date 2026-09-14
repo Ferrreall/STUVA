@@ -56,7 +56,7 @@
 
     <main class="main-content">
       <!-- Quick Stats -->
-      <section class="stats-grid">
+      <section class="stats-grid col-12">
         <div class="stat-card bg-blue">
           <div class="stat-icon">
             <Users class="icon-lg" />
@@ -92,14 +92,14 @@
             <Clock class="icon-lg" />
           </div>
           <div class="stat-content">
-            <p class="stat-value">{{ stats.pendingRequests }}</p>
+            <p class="stat-value">{{ pendingRequests.length }}</p>
             <p class="stat-label">Pengajuan Pending</p>
           </div>
         </div>
       </section>
 
       <!-- Kelas yang Diajar -->
-      <section class="card">
+      <section class="card col-8">
         <h2 class="card-title">Kelas yang Diajar</h2>
         
         <div class="class-list">
@@ -142,70 +142,8 @@
         </div>
       </section>
 
-      <!-- Pengajuan Izin/Sakit Terbaru -->
-      <section class="card">
-        <div class="section-header">
-          <h2 class="card-title">Pengajuan Izin/Sakit Terbaru</h2>
-          <button @click="navigateTo('/guru/pengajuan')" class="btn-see-all">
-            Lihat Semua
-            <ChevronRight class="icon-xs" />
-          </button>
-        </div>
-
-        <div v-if="recentRequests.length === 0" class="empty-state">
-          <FileText class="icon-lg text-gray" />
-          <p class="empty-text">Tidak ada pengajuan baru</p>
-        </div>
-
-        <div v-else class="request-list">
-          <div 
-            v-for="request in recentRequests" 
-            :key="request.id" 
-            class="request-item"
-          >
-            <div class="request-student">
-              <div class="student-avatar">
-                <User class="icon-sm" />
-              </div>
-              <div class="student-info">
-                <p class="student-name">{{ request.studentName }}</p>
-                <p class="student-class">{{ request.className }}</p>
-              </div>
-            </div>
-
-            <div class="request-details">
-              <div class="request-type-badge" :class="`badge-${request.type}`">
-                {{ request.type.toUpperCase() }}
-              </div>
-              <div class="request-date">
-                <Calendar class="icon-xs text-gray" />
-                <span>{{ formatDateRange(request.startDate, request.endDate) }}</span>
-              </div>
-              <p class="request-description">{{ request.description }}</p>
-            </div>
-
-            <div class="request-actions">
-              <button 
-                @click="rejectRequest(request.id)" 
-                class="btn btn-reject-sm"
-                :disabled="processingId === request.id"
-              >
-                <X class="icon-xs" />
-              </button>
-              <button 
-                @click="approveRequest(request.id)" 
-                class="btn btn-approve-sm"
-                :disabled="processingId === request.id"
-              >
-                <Check class="icon-xs" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Jadwal Mengajar Hari Ini -->
-      <section class="card">
+      <section class="card col-4">
         <h2 class="card-title">Jadwal Mengajar Hari Ini</h2>
         
         <div class="schedule-list">
@@ -232,7 +170,129 @@
           </div>
         </div>
       </section>
+
+      <!-- Pengajuan Izin/Sakit Terbaru -->
+      <section class="card col-12">
+        <div class="section-header">
+          <div class="card-title-row">
+            <h2 class="card-title">Menunggu Verifikasi</h2>
+            <span v-if="pendingRequests.length" class="count-chip">{{ pendingRequests.length }}</span>
+          </div>
+          <button @click="navigateTo('/guru/pengajuan')" class="btn-see-all">
+            Lihat Semua
+            <ChevronRight class="icon-xs" />
+          </button>
+        </div>
+
+        <div v-if="loadingRequests" class="loading-state">
+          <div class="spinner"></div>
+          <p class="loading-text">Memuat pengajuan...</p>
+        </div>
+
+        <div v-else-if="pendingRequests.length === 0" class="empty-state">
+          <CheckCircle class="icon-lg" />
+          <p class="empty-text">Semua pengajuan telah diverifikasi</p>
+        </div>
+
+        <div v-else class="request-list">
+          <article
+            v-for="request in pendingRequests"
+            :key="request.id"
+            class="request-item"
+            :class="`t-${request.type}`"
+          >
+            <div class="request-student">
+              <div class="student-avatar">
+                <User class="icon-sm" />
+              </div>
+              <div class="student-info">
+                <p class="student-name">{{ request.studentName }}</p>
+                <p class="student-class">{{ request.className }}</p>
+                <p class="request-time">{{ request.createdAt }}</p>
+              </div>
+            </div>
+
+            <div class="request-details">
+              <div class="request-details-top">
+                <div class="request-type-badge" :class="`badge-${request.type}`">
+                  {{ request.type.toUpperCase() }}
+                </div>
+                <div class="request-date">
+                  <Calendar class="icon-xs" />
+                  <span>{{ formatDateRange(request.startDate, request.endDate) }}</span>
+                </div>
+              </div>
+              <p class="request-description">{{ request.description }}</p>
+
+              <div v-if="request.photo" class="request-photo">
+                <img :src="request.photo" alt="Bukti" @click="openImageModal(request.photo)" @error="onImgError" />
+              </div>
+            </div>
+
+            <div class="request-actions">
+              <button
+                @click="openRejectModal(request)"
+                class="btn btn-reject-sm"
+                :disabled="processingId === request.id"
+              >
+                <X class="icon-xs" />
+              </button>
+              <button
+                @click="approveRequest(request.id)"
+                class="btn btn-approve-sm"
+                :disabled="processingId === request.id"
+              >
+                <Check class="icon-xs" />
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
     </main>
+
+    <!-- Modal Penolakan -->
+    <Teleport to="body">
+      <div v-if="showRejectModal" class="modal-overlay" @click="closeRejectModal">
+        <div class="modal-container" @click.stop>
+          <div class="modal-header">
+            <h3 class="modal-title">Alasan Penolakan</h3>
+            <button @click="closeRejectModal" class="btn-close">
+              <X class="icon-sm" />
+            </button>
+          </div>
+          <form @submit.prevent="rejectRequest" class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Tuliskan alasan penolakan</label>
+              <textarea
+                v-model="rejectionNote"
+                class="form-textarea"
+                rows="4"
+                placeholder="Contoh: Surat keterangan tidak jelas..."
+                required
+              ></textarea>
+            </div>
+            <div class="modal-footer">
+              <button type="button" @click="closeRejectModal" class="btn btn-cancel">Batal</button>
+              <button type="submit" class="btn btn-submit btn-danger" :disabled="isProcessing">
+                {{ isProcessing ? 'Memproses...' : 'Kirim Penolakan' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Modal Gambar -->
+    <Teleport to="body">
+      <div v-if="showImageModal" class="modal-overlay" @click="closeImageModal">
+        <div class="image-modal-container" @click.stop>
+          <button @click="closeImageModal" class="btn-close-image">
+            <X class="icon-md" />
+          </button>
+          <img :src="selectedImage" alt="Bukti" class="modal-image" />
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Toast Notification -->
     <Teleport to="body">
@@ -248,139 +308,186 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
-import { 
-  Wifi, 
-  User,
-  ChevronDown,
-  Settings,
-  LogOut,
-  Users,
-  CheckCircle,
-  AlertTriangle,
-  Clock,
-  FileText,
-  Calendar,
-  X,
-  Check,
-  ChevronRight
+import apiClient from '../../utils/api'
+import {
+  Wifi, User, ChevronDown, Settings, LogOut,
+  Users, CheckCircle, AlertTriangle, Clock,
+  FileText, Calendar, X, Check, ChevronRight
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
+// ===== UI State =====
 const showProfileMenu = ref(false)
 const showToast = ref(false)
 const toastMessage = ref('')
 const toastType = ref('success')
 const processingId = ref(null)
+const isProcessing = ref(false)
+const showRejectModal = ref(false)
+const rejectionNote = ref('')
+const selectedRequestId = ref(null)
+const showImageModal = ref(false)
+const selectedImage = ref(null)
+
+// ===== Data =====
+const loadingRequests = ref(true)
+const allRequests = ref([])
 
 const teacher = ref({
   name: authStore.user?.name || 'Guru Test',
-  nip: authStore.user?.nip || '198501012010011001',
-  subject: authStore.user?.subject || 'Matematika'
+  nip: authStore.user?.username || '-',
+  subject: 'Matematika'
 })
 
+// TODO: nanti dari API attendance khusus guru
 const stats = ref({
   totalStudents: 150,
   presentToday: 142,
-  absentToday: 8,
-  pendingRequests: 5
+  absentToday: 8
 })
 
-const classes = ref([
-  {
-    id: 1,
-    name: 'X IPA 1',
-    subject: 'Matematika',
-    studentCount: 32,
-    present: 30,
-    permission: 1,
-    sick: 1,
-    absent: 0
-  },
-  {
-    id: 2,
-    name: 'X IPA 2',
-    subject: 'Matematika',
-    studentCount: 30,
-    present: 28,
-    permission: 0,
-    sick: 1,
-    absent: 1
-  },
-  {
-    id: 3,
-    name: 'XI IPA 1',
-    subject: 'Matematika',
-    studentCount: 28,
-    present: 27,
-    permission: 1,
-    sick: 0,
-    absent: 0
-  }
-])
+// ===== Helpers =====
 
-const recentRequests = ref([
-  {
-    id: 1,
-    studentName: 'Ahmad Fauzi',
-    className: 'X IPA 1',
-    type: 'sakit',
-    startDate: '2026-09-03',
-    endDate: '2026-09-03',
-    description: 'Demam dan flu'
-  },
-  {
-    id: 2,
-    studentName: 'Siti Aminah',
-    className: 'X IPA 2',
-    type: 'izin',
-    startDate: '2026-09-04',
-    endDate: '2026-09-04',
-    description: 'Acara keluarga'
-  }
-])
+// 📌 fix foto bukti broken
+const buildPhotoUrl = (path) => {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  const base = import.meta.env.VITE_API_URL.replace('/api', '')
+  return `${base}/storage/${path}`
+}
 
-const todaySchedule = ref([
-  {
-    id: 1,
-    className: 'X IPA 1',
-    subject: 'Matematika',
-    room: '201',
-    startTime: '07:30',
-    endTime: '09:00'
-  },
-  {
-    id: 2,
-    className: 'X IPA 2',
-    subject: 'Matematika',
-    room: '202',
-    startTime: '09:15',
-    endTime: '10:45'
-  },
-  {
-    id: 3,
-    className: 'XI IPA 1',
-    subject: 'Matematika',
-    room: '301',
-    startTime: '13:00',
-    endTime: '14:30'
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return 'Baru saja'
+  const diffMs = Date.now() - new Date(dateString)
+  const mins = Math.floor(diffMs / 60000)
+  const hours = Math.floor(diffMs / 3600000)
+  const days = Math.floor(diffMs / 86400000)
+  if (mins < 1) return 'Baru saja'
+  if (mins < 60) return `${mins} menit yang lalu`
+  if (hours < 24) return `${hours} jam yang lalu`
+  if (days === 1) return '1 hari yang lalu'
+  if (days < 7) return `${days} hari yang lalu`
+  return `${Math.floor(days / 7)} minggu yang lalu`
+}
+
+const formatDateRange = (start, end) => {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
   }
-])
+  if (start === end) return formatDate(start)
+  return `${formatDate(start)} - ${formatDate(end)}`
+}
+
+const onImgError = (event) => {
+  event.target.closest('.request-photo')?.classList.add('photo-hidden')
+}
 
 const displayToast = (message, type = 'success') => {
   toastMessage.value = message
   toastType.value = type
   showToast.value = true
-  
-  setTimeout(() => {
-    showToast.value = false
-  }, 3000)
+  setTimeout(() => { showToast.value = false }, 3000)
 }
 
+// ===== Fetch =====
+const fetchRequests = async () => {
+  loadingRequests.value = true
+  try {
+    console.log('📡 Fetching permissions (guru)...')
+    const response = await apiClient.get('/permissions')
+    const permissions = response.data.data || response.data || []
+
+    allRequests.value = permissions.map(item => ({
+      id: item.id,
+      studentName: item.student?.name || 'Siswa',
+      className: item.student?.class_name || '-',
+      type: item.type,
+      startDate: item.start_date,
+      endDate: item.end_date,
+      description: item.reason,
+      photo: buildPhotoUrl(item.attachment),
+      status: item.status,
+      createdAt: formatTimeAgo(item.created_at)
+    }))
+  } catch (error) {
+    console.error('❌ Error fetching requests:', error)
+    allRequests.value = []
+  } finally {
+    loadingRequests.value = false
+  }
+}
+
+// Yang menunggu verifikasi GURU
+const pendingRequests = computed(() =>
+  allRequests.value.filter(req => req.status === 'pending_teacher')
+)
+
+// ===== Actions =====
+const approveRequest = async (requestId) => {
+  processingId.value = requestId
+  try {
+    await apiClient.post(`/permissions/${requestId}/teacher-approve`, {
+      action: 'approve'
+    })
+    displayToast('Pengajuan disetujui!', 'success')
+    await fetchRequests()
+  } catch (error) {
+    console.error('❌ Error approving:', error)
+    const msg = error.response?.data?.message || 'Gagal menyetujui pengajuan'
+    displayToast(msg, 'error')
+  } finally {
+    processingId.value = null
+  }
+}
+
+const openRejectModal = (request) => {
+  selectedRequestId.value = request.id
+  rejectionNote.value = ''
+  showRejectModal.value = true
+}
+
+const closeRejectModal = () => {
+  showRejectModal.value = false
+  selectedRequestId.value = null
+  rejectionNote.value = ''
+}
+
+const rejectRequest = async () => {
+  isProcessing.value = true
+  try {
+    await apiClient.post(`/permissions/${selectedRequestId.value}/teacher-approve`, {
+      action: 'reject',
+      rejection_reason: rejectionNote.value
+    })
+    closeRejectModal()
+    displayToast('Pengajuan ditolak.', 'success')
+    await fetchRequests()
+  } catch (error) {
+    console.error('❌ Error rejecting:', error)
+    const msg = error.response?.data?.message || 'Gagal menolak pengajuan'
+    displayToast(msg, 'error')
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+// ===== Image modal =====
+const openImageModal = (imageUrl) => {
+  selectedImage.value = imageUrl
+  showImageModal.value = true
+}
+const closeImageModal = () => {
+  showImageModal.value = false
+  selectedImage.value = null
+}
+
+// ===== Profile & nav =====
 const toggleProfileMenu = () => {
   showProfileMenu.value = !showProfileMenu.value
 }
@@ -392,64 +499,12 @@ const navigateTo = (path) => {
 
 const handleLogout = async () => {
   showProfileMenu.value = false
-  
   try {
     await authStore.logout()
-    displayToast('Berhasil logout', 'success')
-    
-    setTimeout(() => {
-      router.push('/login')
-    }, 800)
-    
   } catch (error) {
-    console.error('Logout error:', error)
-    displayToast('Terjadi kesalahan saat logout', 'error')
-    
-    setTimeout(() => {
-      router.push('/login')
-    }, 1500)
-  }
-}
-
-const approveRequest = async (requestId) => {
-  processingId.value = requestId
-  
-  try {
-    // TODO: Call API
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Remove from list
-    const index = recentRequests.value.findIndex(r => r.id === requestId)
-    if (index !== -1) {
-      recentRequests.value.splice(index, 1)
-    }
-    
-    displayToast('Pengajuan disetujui', 'success')
-  } catch (error) {
-    displayToast('Gagal menyetujui pengajuan', 'error')
+    console.error('❌ Logout error:', error)
   } finally {
-    processingId.value = null
-  }
-}
-
-const rejectRequest = async (requestId) => {
-  processingId.value = requestId
-  
-  try {
-    // TODO: Call API
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Remove from list
-    const index = recentRequests.value.findIndex(r => r.id === requestId)
-    if (index !== -1) {
-      recentRequests.value.splice(index, 1)
-    }
-    
-    displayToast('Pengajuan ditolak', 'success')
-  } catch (error) {
-    displayToast('Gagal menolak pengajuan', 'error')
-  } finally {
-    processingId.value = null
+    router.push({ path: '/login', query: { logout: 'success' } })
   }
 }
 
@@ -457,19 +512,7 @@ const takeAttendance = (scheduleId) => {
   navigateTo(`/guru/absensi/${scheduleId}`)
 }
 
-const formatDateRange = (start, end) => {
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
-  }
-  
-  if (start === end) {
-    return formatDate(start)
-  }
-  return `${formatDate(start)} - ${formatDate(end)}`
-}
-
-// Close dropdown when clicking outside
+// ===== Lifecycle =====
 let clickOutsideHandler = null
 
 onMounted(() => {
@@ -480,6 +523,8 @@ onMounted(() => {
     }
   }
   document.addEventListener('click', clickOutsideHandler)
+
+  fetchRequests()
 })
 
 onUnmounted(() => {
@@ -487,10 +532,6 @@ onUnmounted(() => {
     document.removeEventListener('click', clickOutsideHandler)
   }
 })
-
-
 </script>
 
-<style scoped>
-@import '../../assets/css/DashboardGuru.css';
-</style>
+<style src="../../assets/css/DashboardGuru.css"></style>

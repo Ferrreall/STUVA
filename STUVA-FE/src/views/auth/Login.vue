@@ -16,10 +16,10 @@
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
           <label for="username" class="form-label">Username / NISN</label>
-          <input 
-            type="text" 
-            id="username" 
-            v-model="formData.username" 
+          <input
+            type="text"
+            id="username"
+            v-model="formData.username"
             class="form-input"
             placeholder="Masukkan username atau NISN"
             required
@@ -29,15 +29,21 @@
 
         <div class="form-group">
           <label for="password" class="form-label">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            v-model="formData.password" 
-            class="form-input"
-            placeholder="Masukkan password"
-            required
-            :disabled="authStore.loading"
-          />
+          <div class="input-wrapper">
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              id="password"
+              v-model="formData.password"
+              class="form-input"
+              placeholder="Masukkan password"
+              required
+              :disabled="authStore.loading"
+            />
+            <button type="button" class="toggle-password" @click="showPassword = !showPassword" tabindex="-1">
+              <Eye v-if="!showPassword" class="icon-sm" />
+              <EyeOff v-else class="icon-sm" />
+            </button>
+          </div>
         </div>
 
         <div v-if="authStore.error" class="error-message">
@@ -50,7 +56,12 @@
         </div>
 
         <button type="submit" class="btn-login" :disabled="authStore.loading">
-          <span v-if="!authStore.loading">Masuk</span>
+          <span v-if="!authStore.loading">
+            Masuk
+            <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
           <span v-else class="loading-text">
             <svg class="spinner" viewBox="0 0 24 24">
               <circle class="spinner-circle" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
@@ -61,21 +72,21 @@
       </form>
 
       <div class="login-footer">
-        <p class="footer-text">Demo Account:</p>
+        <p class="footer-text">Akun Demo <span class="footer-hint">— klik untuk isi otomatis</span></p>
         <div class="demo-accounts">
-          <button @click="useDemoAccount('siswa')" class="demo-btn" :disabled="authStore.loading">
-            Siswa
-          </button>
-          <button @click="useDemoAccount('guru')" class="demo-btn" :disabled="authStore.loading">
-            Guru
-          </button>
-          <button @click="useDemoAccount('ortu')" class="demo-btn" :disabled="authStore.loading">
-            Orang Tua
-          </button>
-          <button @click="useDemoAccount('admin')" class="demo-btn demo-admin" :disabled="authStore.loading">
-            Admin
-          </button>
-        </div>
+        <button @click="useDemoAccount('siswa')" class="demo-btn demo-siswa" :disabled="authStore.loading">
+          Siswa
+        </button>
+        <button @click="useDemoAccount('guru')" class="demo-btn demo-guru" :disabled="authStore.loading">
+          Guru
+        </button>
+        <button @click="useDemoAccount('ortu')" class="demo-btn demo-ortu" :disabled="authStore.loading">
+          Orang Tua
+        </button>
+        <button @click="useDemoAccount('admin')" class="demo-btn demo-admin" :disabled="authStore.loading">
+          Admin
+        </button>
+      </div>
       </div>
 
       <!-- Debug: Force Logout Button -->
@@ -95,6 +106,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import { useAuthStore } from '../../stores/authStore'
 import apiClient from '../../utils/api'
+import { Eye, EyeOff } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
@@ -105,6 +117,7 @@ const formData = ref({
   username: '',
   password: ''
 })
+const showPassword = ref(false)  
 
 const isLoggingOut = ref(false)
 

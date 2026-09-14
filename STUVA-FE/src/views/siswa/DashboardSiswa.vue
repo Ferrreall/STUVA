@@ -55,10 +55,18 @@
     </header>
 
     <main class="main-content">
+      <!-- Hero Greeting -->
+      <section class="hero-greeting col-12">
+        <div>
+<p class="hero-hi">{{ greeting }}, {{ user.name.split(' ')[0] }} 👋</p>
+<p class="hero-sub">{{ todayLabel }} — Jangan lupa absen hari ini, ya!</p>
+        </div>
+        <div class="hero-emoji">📚</div>
+      </section>
       <!-- Sticky Banner Warning 90% (Conditional Rendering) -->
       <div 
         v-if="showWarningBanner && attendanceStats.percentage < 90" 
-        class="warning-banner"
+        class="warning-banner col-12"
       >
         <div class="warning-body">
           <AlertTriangle class="icon-md text-red shrink-0" />
@@ -74,53 +82,72 @@
         </button>
       </div>
 
-      <!-- Card Ringkasan Absensi -->
-      <section class="card">
-        <h2 class="card-title">Rekap Presensi Semester</h2>
-        
-        <!-- Progress Bar Persentase -->
-        <div class="progress-section">
-          <div class="progress-header">
-            <span class="progress-label">Tingkat Kehadiran</span>
-            <span 
-              class="progress-value" 
-              :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green'"
-            >
-              {{ attendanceStats.percentage }}%
-            </span>
-          </div>
-          <div class="progress-bar-bg">
-            <div 
-              class="progress-bar-fill" 
-              :class="attendanceStats.percentage < 90 ? 'bg-red' : 'bg-green'"
-              :style="{ width: `${attendanceStats.percentage}%` }"
-            ></div>
-          </div>
-        </div>
+<!-- Card Ringkasan Absensi -->
+<section class="card col-8">
+  <h2 class="card-title">Rekap Presensi Semester</h2>
 
-        <!-- Detail Stat Grid -->
-        <div class="stat-grid">
-          <div class="stat-box bg-green-light">
-            <span class="stat-label text-green">Hadir</span>
-            <span class="stat-value text-green-dark">{{ attendanceStats.hadir }}</span>
-          </div>
-          <div class="stat-box bg-yellow-light">
-            <span class="stat-label text-yellow">Sakit</span>
-            <span class="stat-value text-yellow-dark">{{ attendanceStats.sakit }}</span>
-          </div>
-          <div class="stat-box bg-blue-light">
-            <span class="stat-label text-blue">Izin</span>
-            <span class="stat-value text-blue-dark">{{ attendanceStats.izin }}</span>
-          </div>
-          <div class="stat-box bg-red-light">
-            <span class="stat-label text-red">Alpha</span>
-            <span class="stat-value text-red-dark">{{ attendanceStats.alpha }}</span>
-          </div>
-        </div>
-      </section>
+  <!-- Progress Bar Persentase -->
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-label">Tingkat Kehadiran</span>
+      <span
+        class="progress-value"
+        :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green'"
+      >
+        {{ attendanceStats.percentage }}%
+      </span>
+    </div>
+    <div class="progress-bar-bg">
+      <div
+        class="progress-bar-fill"
+        :class="attendanceStats.percentage < 90 ? 'bg-red' : 'bg-green'"
+        :style="{ width: `${attendanceStats.percentage}%` }"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Chart & Detail Stat -->
+  <div class="summary-layout">
+    <!-- Doughnut Chart -->
+    <div class="chart-wrapper">
+      <Doughnut :data="chartData" :options="chartOptions" />
+      <div class="chart-center">
+        <span
+          class="chart-center-value"
+          :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green-dark'"
+        >
+          {{ attendanceStats.percentage }}%
+        </span>
+        <span class="chart-center-label">Hadir</span>
+      </div>
+    </div>
+
+    <!-- Stat Grid 2x2 -->
+    <div class="stat-grid">
+      <div class="stat-box bg-green-light">
+        <span class="stat-label text-green">Hadir</span>
+        <span class="stat-value text-green-dark">{{ attendanceStats.hadir }}</span>
+      </div>
+      <div class="stat-box bg-yellow-light">
+        <span class="stat-label text-yellow">Sakit</span>
+        <span class="stat-value text-yellow-dark">{{ attendanceStats.sakit }}</span>
+      </div>
+      <div class="stat-box bg-blue-light">
+        <span class="stat-label text-blue">Izin</span>
+        <span class="stat-value text-blue-dark">{{ attendanceStats.izin }}</span>
+      </div>
+      <div class="stat-box bg-red-light">
+        <span class="stat-label text-red">Alpha</span>
+        <span class="stat-value text-red-dark">{{ attendanceStats.alpha }}</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="summary-total">Total {{ totalHari }} hari tercatat semester ini</p>
+</section>
 
       <!-- Telemetri MDM Status (Simulasi Hardcode PWA) -->
-      <section class="card">
+      <section class="card col-4">
         <h2 class="card-title">Status Perangkat & Telemetri</h2>
         
         <div class="telemetry-list">
@@ -153,7 +180,7 @@
       </section>
 
       <!-- Quick Action Buttons -->
-      <section class="action-grid">
+      <section class="action-grid col-12">
         <button @click="openModal" class="btn btn-primary">
           <FilePlus class="icon-md" />
           <span>Ajukan Izin</span>
@@ -166,59 +193,71 @@
       </section>
 
       <!-- Riwayat Pengajuan Izin/Sakit/Dispen -->
-      <section class="card">
-        <h2 class="card-title">Riwayat Pengajuan</h2>
-        
+      <!-- Riwayat Pengajuan Izin/Sakit/Dispen -->
+      <section class="card col-12">
+        <div class="card-title-row">
+          <h2 class="card-title">Riwayat Pengajuan</h2>
+          <span v-if="requestHistory.length" class="count-chip">{{ requestHistory.length }}</span>
+        </div>
+
         <div v-if="loadingHistory" class="loading-state">
           <div class="spinner"></div>
           <p class="loading-text">Memuat riwayat...</p>
         </div>
-        
+
         <div v-else-if="requestHistory.length === 0" class="empty-state">
-          <FileText class="icon-lg text-gray" />
+          <FileText class="icon-lg" />
           <p class="empty-text">Belum ada pengajuan</p>
         </div>
 
-        <div v-else class="request-list">
-          <div 
-            v-for="request in requestHistory" 
-            :key="request.id" 
-            class="request-item"
+        <div v-else class="request-grid">
+          <article
+            v-for="request in requestHistory"
+            :key="request.id"
+            class="request-card"
+            :class="`t-${request.type}`"
           >
-            <div class="request-header">
-              <div class="request-type-badge" :class="`badge-${request.type}`">
-                {{ request.type.toUpperCase() }}
-              </div>
-              <div class="request-status-badge" :class="`status-${request.status}`">
-                <span class="status-dot"></span>
-                <span>{{ getStatusLabel(request.status) }}</span>
-              </div>
-            </div>
-            
-            <div class="request-body">
-              <div class="request-date">
-                <Calendar class="icon-sm text-gray" />
-                <span>{{ formatDateRange(request.startDate, request.endDate) }}</span>
-              </div>
-              <p class="request-description">{{ request.description }}</p>
-              
-              <div v-if="request.photo" class="request-photo">
-                <img :src="request.photo" alt="Bukti" />
-              </div>
-
-              <div v-if="request.status === 'rejected' && request.rejectionNote" class="rejection-note">
-                <AlertTriangle class="icon-sm text-red" />
+            <!-- Head: ikon + jenis + status -->
+            <header class="request-card-head">
+              <div class="request-type">
+                <span class="type-icon" :class="`ti-${request.type}`">
+                  <FileText v-if="request.type === 'izin'" class="icon-sm" />
+                  <Thermometer v-else-if="request.type === 'sakit'" class="icon-sm" />
+                  <Clock v-else class="icon-sm" />
+                </span>
                 <div>
-                  <p class="rejection-label">Alasan Penolakan:</p>
-                  <p class="rejection-text">{{ request.rejectionNote }}</p>
+                  <p class="type-name">{{ typeLabel(request.type) }}</p>
+                  <p class="request-time">{{ request.createdAt }}</p>
                 </div>
               </div>
+              <span class="request-status-badge" :class="`status-${statusKey(request.status)}`">
+                <span class="status-dot"></span>
+                {{ getStatusLabel(request.status) }}
+              </span>
+            </header>
+
+            <p class="request-description">{{ request.description }}</p>
+
+            <!-- Tanggal -->
+            <div class="request-date-chip">
+              <Calendar class="icon-sm" />
+              <span>{{ formatDateRange(request.startDate, request.endDate) }}</span>
             </div>
 
-            <div class="request-footer">
-              <span class="request-time">Diajukan {{ request.createdAt }}</span>
+            <!-- Bukti foto -->
+            <div v-if="request.photo" class="request-photo">
+              <img :src="request.photo" alt="Bukti pengajuan" @error="onImgError" />
             </div>
-          </div>
+
+            <!-- Catatan penolakan -->
+            <div v-if="request.status === 'rejected' && request.rejectionNote" class="rejection-note">
+              <AlertTriangle class="icon-sm text-red shrink-0" />
+              <div>
+                <p class="rejection-label">Alasan Penolakan</p>
+                <p class="rejection-text">{{ request.rejectionNote }}</p>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
     </main>
@@ -331,10 +370,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import apiClient from '../../utils/api'
+import { Doughnut } from 'vue-chartjs'
+import { Thermometer } from 'lucide-vue-next' // tambahin ke import lucide yang udah ada
 import { 
   Wifi, 
   AlertTriangle, 
@@ -351,6 +392,87 @@ import {
   Settings,
   LogOut
 } from 'lucide-vue-next'
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+ChartJS.register(ArcElement, Tooltip, Legend)
+
+// 📌 fix foto bukti broken — prefix /storage/
+const buildPhotoUrl = (path) => {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  const base = import.meta.env.VITE_API_URL.replace('/api', '')
+  return `${base}/storage/${path}`
+}
+
+// ===== Chart Presensi =====
+const totalHari = computed(() => {
+  const { hadir, sakit, izin, alpha } = attendanceStats.value
+  return hadir + sakit + izin + alpha
+})
+
+const chartData = computed(() => {
+  const { hadir, sakit, izin, alpha } = attendanceStats.value
+  const total = hadir + sakit + izin + alpha
+
+  // Handle kondisi belum ada data sama sekali
+  if (total === 0) {
+    return {
+      labels: ['Belum ada data'],
+      datasets: [{
+        data: [1],
+        backgroundColor: ['#e5e7eb'],
+        borderWidth: 0,
+        borderRadius: 0,
+        spacing: 0
+      }]
+    }
+  }
+
+  return {
+    labels: ['Hadir', 'Sakit', 'Izin', 'Alpha'],
+    datasets: [{
+      data: [hadir, sakit, izin, alpha],
+      backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#f43f5e'],   // Hadir, Sakit, Izin, Alpha
+      hoverBackgroundColor: ['#059669', '#d97706', '#7c3aed', '#e11d48'],
+      borderWidth: 0,
+      borderRadius: 6,   // sudut melengkung ala modern donut
+      spacing: 3,        // gap antar segmen
+      hoverOffset: 8     // segmen "melebar" saat di-hover
+    }]
+  }
+})
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: '75%',
+  plugins: {
+    legend: { display: false }, // legend sudah direpresentasikan stat boxes
+    tooltip: {
+      backgroundColor: 'rgba(46, 16, 101, 0.92)',
+      titleColor: '#ffffff',
+      bodyColor: '#e2e8f0',
+      padding: 10,
+      cornerRadius: 10,
+      usePointStyle: true,
+      boxWidth: 8,
+      boxHeight: 8,
+      callbacks: {
+        label: (ctx) => ` ${ctx.parsed} hari`
+      }
+    }
+  },
+  animation: {
+    duration: 900,
+    easing: 'easeOutQuart',
+    animateRotate: true
+  }
+}
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -367,6 +489,18 @@ const user = ref({
   name: authStore.user?.name || 'Siswa Test',
   username: authStore.user?.username || '1234567890',
   class_name: authStore.user?.class_name || 'XII RPL 1'
+})
+
+// greeting
+const greeting = computed(() => {
+  const h = new Date().getHours()
+  if (h < 11) return 'Selamat pagi'
+  if (h < 15) return 'Selamat siang'
+  if (h < 19) return 'Selamat sore'
+  return 'Selamat malam'
+})
+const todayLabel = new Date().toLocaleDateString('id-ID', {
+  weekday: 'long', day: 'numeric', month: 'long'
 })
 
 const attendanceStats = ref({
@@ -414,7 +548,7 @@ const fetchPermissions = async () => {
       startDate: item.start_date,
       endDate: item.end_date,
       description: item.reason || item.description,
-      photo: item.attachment ? `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.attachment}` : null,
+      photo: buildPhotoUrl(item.attachment),
       status: item.status,
       createdAt: formatTimeAgo(item.created_at),
       rejectionNote: item.rejection_reason || item.rejectionNote
@@ -579,13 +713,31 @@ const submitRequest = async () => {
   }
 }
 
+const typeLabel = (type) =>
+  ({ izin: 'Izin', sakit: 'Sakit', dispen: 'Dispensasi' }[type] || type)
+
+// normalisasi: pending_parent / pending_admin / apapun → 'pending'
+const statusKey = (status) => {
+  if (!status) return 'pending'
+  if (status === 'pending_parent') return 'parent'
+  if (status === 'pending_teacher') return 'school'
+  if (status === 'rejected_parent' || status === 'rejected_teacher') return 'rejected'
+  return status
+}
+
 const getStatusLabel = (status) => {
   const labels = {
-    pending: 'Menunggu',
+    parent: 'Menunggu Ortu',
+    school: 'Diproses Sekolah',
     approved: 'Disetujui',
     rejected: 'Ditolak'
   }
-  return labels[status] || status
+  return labels[statusKey(status)] || status
+}
+
+// sembunyikan gambar yang gagal load, jangan tampil ikon rusak
+const onImgError = (event) => {
+  event.target.closest('.request-photo')?.classList.add('photo-hidden')
 }
 
 const formatDateRange = (start, end) => {
