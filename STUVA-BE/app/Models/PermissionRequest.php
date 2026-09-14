@@ -17,6 +17,8 @@ class PermissionRequest extends Model
         'reason',
         'attachment',
         'status',
+        'rejection_reason',
+        'processed_at',
     ];
 
     public function student()

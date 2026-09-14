@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PermissionRequest;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class PermissionController extends Controller
 {
@@ -60,6 +62,7 @@ class PermissionController extends Controller
 
         $request->validate([
             'action' => 'required|in:approve,reject',
+            'rejection_reason' => 'required_if:action,reject|string|nullable',
         ]);
 
         $permission = PermissionRequest::findOrFail($id);
@@ -71,8 +74,13 @@ class PermissionController extends Controller
             ], 403);
         }
 
-        $permission->status = $request->action === 'approve' ? 'pending_teacher' : 'rejected_parent';
-        $permission->save();
+        $isApprove = $request->action === 'approve';
+
+        $permission->update([
+            'status' => $isApprove ? 'pending_teacher' : 'rejected_parent',
+            'rejection_reason' => $isApprove ? null : $request->rejection_reason,
+            'processed_at' => now(),
+        ]);
 
         return response()->json([
             'message' => 'Status pengajuan izin berhasil diperbarui oleh Orang Tua',
@@ -91,12 +99,39 @@ class PermissionController extends Controller
 
         $request->validate([
             'action' => 'required|in:approve,reject',
+            'rejection_reason' => 'required_if:action,reject|nullable|string',
         ]);
 
         $permission = PermissionRequest::findOrFail($id);
 
-        $permission->status = $request->action === 'approve' ? 'approved' : 'rejected_teacher';
-        $permission->save();
+        $isApprove = $request->action === 'approve';
+
+        $permission->update([
+            'status' => $isApprove ? 'approved' : 'rejected_teacher',
+            'rejection_reason' => $isApprove ? null : $request->rejection_reason,
+            'processed_at' => now(),
+        ]);
+
+        // Jika disetujui Guru, otomatis masukkan/generate ke tabel presensi (Attendances)
+        if ($isApprove) {
+            $startDate = Carbon::parse($permission->start_date);
+            $endDate   = Carbon::parse($permission->end_date);
+
+            for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                if (!$date->isWeekend()) {
+                    Attendance::updateOrCreate(
+                        [
+                            'student_id' => $permission->student_id,
+                            'date'       => $date->toDateString(),
+                        ],
+                        [
+                            'permission_request_id' => $permission->id,
+                            'status'                => $permission->type,
+                        ]
+                    );
+                }
+            }
+        }
 
         return response()->json([
             'message' => 'Status pengajuan izin berhasil diverifikasi Guru',

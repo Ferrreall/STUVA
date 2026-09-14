@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
 {
-    Schema::table('permission_requests', function (Blueprint $table) {  // ← nama tabel yang benar
+    Schema::table('permission_requests', function (Blueprint $table) { 
         $table->text('rejection_reason')->nullable()->after('status');
         $table->timestamp('processed_at')->nullable()->after('rejection_reason');
     });
