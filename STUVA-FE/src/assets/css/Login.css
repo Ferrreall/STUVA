@@ -205,6 +205,18 @@
   cursor: not-allowed;
 }
 
+.demo-admin {
+  grid-column: span 3;
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  color: #ffffff;
+  border-color: #1f2937;
+}
+
+.demo-admin:hover:not(:disabled) {
+  background: linear-gradient(135deg, #111827 0%, #000000 100%);
+  border-color: #111827;
+}
+
 /* Debug Section */
 .debug-section {
   margin-top: 24px;

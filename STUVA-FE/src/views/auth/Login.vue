@@ -72,6 +72,9 @@
           <button @click="useDemoAccount('ortu')" class="demo-btn" :disabled="authStore.loading">
             Orang Tua
           </button>
+          <button @click="useDemoAccount('admin')" class="demo-btn demo-admin" :disabled="authStore.loading">
+            Admin
+          </button>
         </div>
       </div>
 
@@ -131,17 +134,19 @@ const handleLogin = async () => {
       redirectPath = '/ortu/dashboard'
     } else if (role === 'guru') {
       redirectPath = '/guru/dashboard'
+    } else if (role === 'admin') {
+      redirectPath = '/admin/dashboard'
     } else {
       redirectPath = '/siswa/dashboard'
     }
 
     router.push(redirectPath).catch((error) => {
-      console.error('Router.push error:', error)
+      console.error('⚠️ Router.push error:', error)
       window.location.href = redirectPath
     })
 
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('❌ Login error:', error)
     // Toast error sudah otomatis dipanggil dari authStore.login
   }
 }
@@ -192,6 +197,9 @@ const useDemoAccount = (role) => {
   } else if (role === 'ortu') {
     formData.value.username = '081234567890'
     formData.value.password = 'password123'
+  } else if (role === 'admin') {
+    formData.value.username = 'admin'
+    formData.value.password = 'admin123'
   }
 }
 </script>

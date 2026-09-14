@@ -3,13 +3,53 @@
     <!-- Header -->
     <header class="header">
       <div class="header-content">
-        <div>
-          <h1 class="user-name">{{ parent.name }}</h1>
-          <p class="user-info">Orang Tua {{ parent.studentName }}</p>
+        <div class="header-left">
+          <h1 class="app-name">STUVA</h1>
         </div>
-        <div class="pwa-badge">
-          <Wifi class="icon-sm text-green" />
-          <span>PWA Ready</span>
+        <div class="header-right">
+          <div class="pwa-badge-circle">
+            <Wifi class="icon-xs" />
+          </div>
+          <div class="profile-wrapper">
+            <button @click="toggleProfileMenu" class="profile-button">
+              <div class="avatar">
+                <User class="icon-sm" />
+              </div>
+              <ChevronDown class="icon-xs chevron" :class="{ 'rotated': showProfileMenu }" />
+            </button>
+            
+            <!-- Profile Dropdown Menu -->
+            <Transition name="dropdown">
+              <div v-if="showProfileMenu" class="profile-dropdown">
+                <div class="profile-header">
+                  <div class="avatar-large">
+                    <User class="icon-md" />
+                  </div>
+                  <div class="profile-info">
+                    <p class="profile-name">{{ parent.name }}</p>
+                    <p class="profile-role">Orang Tua</p>
+                    <p class="profile-student">Wali dari {{ parent.studentName }}</p>
+                  </div>
+                </div>
+                
+                <div class="profile-menu">
+                  <button @click="navigateTo('/ortu/profile')" class="menu-item">
+                    <User class="icon-sm" />
+                    <span>Profil Saya</span>
+                  </button>
+                  <button @click="navigateTo('/ortu/settings')" class="menu-item">
+                    <Settings class="icon-sm" />
+                    <span>Pengaturan</span>
+                  </button>
+                  <div class="menu-divider"></div>
+                  <button @click="handleLogout" class="menu-item logout">
+                    <LogOut class="icon-sm" />
+                    <span>Keluar</span>
+                  </button>
+                </div>
+              </div>
+            </Transition>
+          </div>
         </div>
       </div>
     </header>
@@ -227,15 +267,24 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/authStore'
 import { 
   Wifi, 
   AlertTriangle, 
   X, 
   CheckCircle, 
   Calendar,
-  FileText
+  FileText,
+  User,
+  ChevronDown,
+  Settings,
+  LogOut
 } from 'lucide-vue-next'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const showRejectModal = ref(false)
 const showImageModal = ref(false)
@@ -247,9 +296,10 @@ const selectedRequestId = ref(null)
 const selectedImage = ref(null)
 const isProcessing = ref(false)
 const processingId = ref(null)
+const showProfileMenu = ref(false)
 
 const parent = ref({
-  name: 'Bapak/Ibu Orang Tua',
+  name: authStore.user?.name || 'Bapak/Ibu Orang Tua',
   studentName: 'Siswa Test',
   studentClass: 'XII RPL 1',
   studentNISN: '1234567890',
@@ -355,8 +405,11 @@ const approveRequest = async (requestId) => {
   isProcessing.value = true
   
   try {
-    // TODO: Ganti dengan API call sebenarnya
-    // await api.post(`/api/ortu/pengajuan/${requestId}/approve`)
+    // TODO: API Integration
+    // POST /ortu/pengajuan/{requestId}/approve
+    // Response: { success: true, message: 'Pengajuan berhasil disetujui' }
+    // Status pengajuan akan berubah menjadi 'approved' dan data akan ter-update di Dashboard Siswa
+    // await apiClient.post(`/ortu/pengajuan/${requestId}/approve`)
     
     // Simulasi delay
     await new Promise(resolve => setTimeout(resolve, 1000))
@@ -383,8 +436,13 @@ const rejectRequest = async () => {
   isProcessing.value = true
   
   try {
-    // TODO: Ganti dengan API call sebenarnya
-    // await api.post(`/api/ortu/pengajuan/${selectedRequestId.value}/reject`, {
+    // TODO: API Integration
+    // POST /ortu/pengajuan/{requestId}/reject
+    // Request body: { rejectionNote: string }
+    // Response: { success: true, message: 'Pengajuan berhasil ditolak' }
+    // Status pengajuan akan berubah menjadi 'rejected' dengan alasan penolakan
+    // Data akan ter-update di Dashboard Siswa dengan status 'rejected' dan menampilkan alasan
+    // await apiClient.post(`/ortu/pengajuan/${selectedRequestId.value}/reject`, {
     //   rejectionNote: rejectionNote.value
     // })
     
@@ -430,6 +488,46 @@ const formatDateRange = (start, end) => {
   }
   return `${formatDate(start)} - ${formatDate(end)}`
 }
+
+const toggleProfileMenu = () => {
+  showProfileMenu.value = !showProfileMenu.value
+}
+
+const navigateTo = (path) => {
+  showProfileMenu.value = false
+  router.push(path)
+}
+
+const handleLogout = async () => {
+  showProfileMenu.value = false
+  try {
+    console.log('🚪 Logging out...')
+    await authStore.logout()
+  } catch (error) {
+    console.error('❌ Logout error:', error)
+  } finally {
+    router.push({ path: '/login', query: { logout: 'success' } })
+  }
+}
+
+// Close dropdown when clicking outside
+let clickOutsideHandler = null
+
+onMounted(() => {
+  clickOutsideHandler = (e) => {
+    const profileWrapper = document.querySelector('.profile-wrapper')
+    if (profileWrapper && !profileWrapper.contains(e.target)) {
+      showProfileMenu.value = false
+    }
+  }
+  document.addEventListener('click', clickOutsideHandler)
+})
+
+onUnmounted(() => {
+  if (clickOutsideHandler) {
+    document.removeEventListener('click', clickOutsideHandler)
+  }
+})
 </script>
 
 <style scoped>
@@ -452,15 +550,201 @@ const formatDateRange = (start, end) => {
 /* Header Styles */
 .header {
   background-color: #7c3aed;
-  padding: 20px 16px;
+  padding: 12px 16px;
   color: #ffffff;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.app-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pwa-badge-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #6d28d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+/* Profile Dropdown */
+.profile-wrapper {
+  position: relative;
+}
+
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.profile-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.chevron {
+  color: #ffffff;
+  transition: transform 0.2s;
+}
+
+.chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  min-width: 280px;
+  overflow: hidden;
+  z-index: 200;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: #ffffff;
+}
+
+.avatar-large {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  font-size: 0.938rem;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-role {
+  font-size: 0.75rem;
+  color: #e9d5ff;
+  margin: 0;
+  font-weight: 500;
+}
+
+.profile-student {
+  font-size: 0.75rem;
+  color: #e9d5ff;
+  margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-menu {
+  padding: 8px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.menu-item:hover {
+  background-color: #f3f4f6;
+}
+
+.menu-item.logout {
+  color: #dc2626;
+}
+
+.menu-item.logout:hover {
+  background-color: #fee2e2;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 8px 0;
 }
 
 .user-name {
@@ -561,6 +845,11 @@ const formatDateRange = (start, end) => {
 .icon-sm {
   width: 16px;
   height: 16px;
+}
+
+.icon-xs {
+  width: 14px;
+  height: 14px;
 }
 
 .icon-md {

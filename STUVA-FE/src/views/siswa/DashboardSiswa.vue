@@ -169,7 +169,12 @@
       <section class="card">
         <h2 class="card-title">Riwayat Pengajuan</h2>
         
-        <div v-if="requestHistory.length === 0" class="empty-state">
+        <div v-if="loadingHistory" class="loading-state">
+          <div class="spinner"></div>
+          <p class="loading-text">Memuat riwayat...</p>
+        </div>
+        
+        <div v-else-if="requestHistory.length === 0" class="empty-state">
           <FileText class="icon-lg text-gray" />
           <p class="empty-text">Belum ada pengajuan</p>
         </div>
@@ -329,6 +334,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
+import apiClient from '../../utils/api'
 import { 
   Wifi, 
   AlertTriangle, 
@@ -386,42 +392,62 @@ const formData = ref({
   photo: null
 })
 
-// Data riwayat pengajuan (simulasi - nanti dari API)
-const requestHistory = ref([
-  {
-    id: 1,
-    type: 'sakit',
-    startDate: '2026-09-01',
-    endDate: '2026-09-02',
-    description: 'Demam tinggi dan flu',
-    photo: null,
-    status: 'approved',
-    createdAt: '1 hari yang lalu',
-    rejectionNote: null
-  },
-  {
-    id: 2,
-    type: 'izin',
-    startDate: '2026-08-28',
-    endDate: '2026-08-28',
-    description: 'Acara keluarga',
-    photo: null,
-    status: 'pending',
-    createdAt: '5 hari yang lalu',
-    rejectionNote: null
-  },
-  {
-    id: 3,
-    type: 'dispen',
-    startDate: '2026-08-25',
-    endDate: '2026-08-25',
-    description: 'Mengikuti lomba coding',
-    photo: null,
-    status: 'rejected',
-    createdAt: '1 minggu yang lalu',
-    rejectionNote: 'Tidak ada bukti surat dari penyelenggara lomba'
+// Data riwayat pengajuan
+const requestHistory = ref([])
+const loadingHistory = ref(false)
+
+// Fetch riwayat pengajuan dari API
+const fetchPermissions = async () => {
+  loadingHistory.value = true
+  
+  try {
+    console.log('📡 Fetching permissions history...')
+    const response = await apiClient.get('/permissions')
+    
+    console.log('✅ Permissions data received:', response.data)
+    
+    // Map data dari API ke format yang digunakan di component
+    const permissions = response.data.data || response.data || []
+    requestHistory.value = permissions.map(item => ({
+      id: item.id,
+      type: item.type,
+      startDate: item.start_date,
+      endDate: item.end_date,
+      description: item.reason || item.description,
+      photo: item.attachment ? `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.attachment}` : null,
+      status: item.status,
+      createdAt: formatTimeAgo(item.created_at),
+      rejectionNote: item.rejection_reason || item.rejectionNote
+    }))
+    
+  } catch (error) {
+    console.error('❌ Error fetching permissions:', error)
+    // Jika error, tetap gunakan array kosong
+    requestHistory.value = []
+  } finally {
+    loadingHistory.value = false
   }
-])
+}
+
+// Format waktu relatif
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return 'Baru saja'
+  
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now - date
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+  
+  if (diffMins < 1) return 'Baru saja'
+  if (diffMins < 60) return `${diffMins} menit yang lalu`
+  if (diffHours < 24) return `${diffHours} jam yang lalu`
+  if (diffDays === 1) return '1 hari yang lalu'
+  if (diffDays < 7) return `${diffDays} hari yang lalu`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} minggu yang lalu`
+  return `${Math.floor(diffDays / 30)} bulan yang lalu`
+}
 
 const dismissBanner = () => {
   showWarningBanner.value = false
@@ -491,45 +517,63 @@ const submitRequest = async () => {
   isSubmitting.value = true
   
   try {
-    // Simulasi API call
-    // Dalam implementasi nyata, kirim ke backend dengan FormData
+    console.log('📡 Submitting permission request...')
+    console.log('🔑 Token:', localStorage.getItem('token') ? 'exists' : 'missing')
+    
+    // Kirim ke API /permission dengan FormData
     const requestData = new FormData()
     requestData.append('type', formData.value.type)
-    requestData.append('startDate', formData.value.startDate)
-    requestData.append('endDate', formData.value.endDate)
-    requestData.append('description', formData.value.description)
+    requestData.append('start_date', formData.value.startDate)
+    requestData.append('end_date', formData.value.endDate)
+    requestData.append('reason', formData.value.description)
+    
     if (formData.value.photo) {
-      requestData.append('photo', formData.value.photo)
+      requestData.append('attachment', formData.value.photo)
+      console.log('📎 Attachment:', formData.value.photo.name)
     }
-    requestData.append('status', 'pending') // Status pending menunggu approval orang tua
     
-    // TODO: Ganti dengan API call sebenarnya
-    // await api.post('/api/siswa/pengajuan-izin', requestData)
-    
-    // Simulasi delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // Tambahkan ke riwayat (simulasi)
-    const newRequest = {
-      id: Date.now(),
+    console.log('📤 Sending data:', {
       type: formData.value.type,
-      startDate: formData.value.startDate,
-      endDate: formData.value.endDate,
-      description: formData.value.description,
-      photo: formData.value.photo ? URL.createObjectURL(formData.value.photo) : null,
-      status: 'pending',
-      createdAt: 'Baru saja',
-      rejectionNote: null
-    }
-    requestHistory.value.unshift(newRequest)
+      start_date: formData.value.startDate,
+      end_date: formData.value.endDate,
+      reason: formData.value.description
+    })
     
-    // Tutup modal dan tampilkan notifikasi sukses
+    const response = await apiClient.post('/permissions', requestData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    
+    console.log('✅ Permission request submitted:', response.data)
+    
     closeModal()
     displayToast('Pengajuan berhasil dikirim! Menunggu persetujuan orang tua.', 'success')
     
+    // Refresh riwayat setelah berhasil submit
+    await fetchPermissions()
+    
   } catch (error) {
-    displayToast('Gagal mengirim pengajuan. Silakan coba lagi.', 'error')
-    console.error('Error submitting request:', error)
+    console.error('❌ Error submitting request:', error)
+    console.error('❌ Error response:', error.response?.data)
+    console.error('❌ Error status:', error.response?.status)
+    
+    let errorMessage = 'Gagal mengirim pengajuan. Silakan coba lagi.'
+    
+    if (error.response?.status === 401) {
+      errorMessage = 'Session expired. Silakan login kembali.'
+      // Redirect manual ke login setelah 2 detik
+      setTimeout(() => {
+        localStorage.clear()
+        router.push('/login')
+      }, 2000)
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+    
+    displayToast(errorMessage, 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -567,6 +611,9 @@ onMounted(() => {
     }
   }
   document.addEventListener('click', clickOutsideHandler)
+  
+  // Fetch riwayat pengajuan saat component dimount
+  fetchPermissions()
 })
 
 onUnmounted(() => {
