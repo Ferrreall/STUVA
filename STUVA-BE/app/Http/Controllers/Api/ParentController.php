@@ -31,7 +31,7 @@ class ParentController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data'   => [
-                    'student'       => $parent->student, // Memanggil relasi student dari model User
+                    'student'       => $parent->student()->select('id', 'name', 'email', 'class_name')->first(),
                     'last_location' => $lastLocation ? [
                         'latitude'     => $lastLocation->latitude,
                         'longitude'    => $lastLocation->longitude,
