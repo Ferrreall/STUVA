@@ -10,7 +10,7 @@
           </svg>
         </div>
         <h1 class="login-title">STUVA</h1>
-        <p class="login-subtitle">Sistem Manajemen Sekolah</p>
+        <p class="login-subtitle">Student Tracking, Utility, Verification & Administration</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="login-form">
@@ -212,7 +212,7 @@ const useDemoAccount = (role) => {
     formData.value.password = 'password123'
   } else if (role === 'admin') {
     formData.value.username = 'admin'
-    formData.value.password = 'admin123'
+    formData.value.password = 'password123'
   }
 }
 </script>

@@ -818,6 +818,15 @@
 .text-blue-dark   { color: var(--brand-700); }
 .bg-blue-light    { background: linear-gradient(180deg, #f8f6ff, #ffffff 70%); }
 
+.text-cyan      { color: #0891b2; }
+.text-cyan-dark { color: #0e7490; }
+.bg-cyan-light  { background: linear-gradient(180deg, #f0fdff, #ffffff 70%); }
+.bg-cyan-light::before { background: #06b6d4; }
+.bg-cyan-light:hover  { box-shadow: 0 10px 22px -6px rgba(6,182,212,.35); border-color: #a5f3fc; }
+
+/* kotak ke-5 (ganjil) melebar penuh biar grid tetap rapi */
+.stat-box:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
 .text-red         { color: #e11d48; }
 .text-red-dark    { color: #be123c; }
 .bg-red           { background: linear-gradient(90deg, #fb7185, #f43f5e); }

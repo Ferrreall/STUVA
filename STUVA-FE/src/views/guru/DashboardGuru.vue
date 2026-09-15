@@ -37,10 +37,6 @@
                     <User class="icon-sm" />
                     <span>Profil Saya</span>
                   </button>
-                  <button @click="navigateTo('/guru/settings')" class="menu-item">
-                    <Settings class="icon-sm" />
-                    <span>Pengaturan</span>
-                  </button>
                   <div class="menu-divider"></div>
                   <button @click="handleLogout" class="menu-item logout">
                     <LogOut class="icon-sm" />
@@ -55,6 +51,14 @@
     </header>
 
     <main class="main-content">
+      <!-- Hero Greeting -->
+      <section class="hero-greeting col-12">
+        <div>
+          <p class="hero-hi">{{ greeting }}, {{ teacher.name.split(' ')[0] }} 👋</p>
+          <p class="hero-sub">{{ todayLabel }} — Ada {{ pendingRequests.length }} pengajuan menunggu verifikasi.</p>
+        </div>
+        <div class="hero-emoji">📘</div>
+      </section>
       <!-- Quick Stats -->
       <section class="stats-grid col-12">
         <div class="stat-card bg-blue">
@@ -342,6 +346,19 @@ const teacher = ref({
   name: authStore.user?.name || 'Guru Test',
   nip: authStore.user?.username || '-',
   subject: 'Matematika'
+})
+
+// greeting & date
+const greeting = computed(() => {
+  const h = new Date().getHours()
+  if (h < 11) return 'Selamat pagi'
+  if (h < 15) return 'Selamat siang'
+  if (h < 19) return 'Selamat sore'
+  return 'Selamat malam'
+})
+
+const todayLabel = new Date().toLocaleDateString('id-ID', {
+  weekday: 'long', day: 'numeric', month: 'long'
 })
 
 // TODO: nanti dari API attendance khusus guru

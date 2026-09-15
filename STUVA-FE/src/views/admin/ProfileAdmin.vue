@@ -35,182 +35,158 @@
         </div>
         <h2 class="profile-name">{{ profile.name || '-' }}</h2>
         <p class="profile-role">{{ roleLabel }}</p>
-        <p v-if="profile.subject || profile.mapel" class="profile-subject">
-          <BookOpen class="icon-xs" />
-          {{ profile.subject || profile.mapel }}
-        </p>
       </section>
 
-      <!-- Dua Kolom Kartu -->
+      <!-- Grid Kartu (flat & beraturan) -->
       <div class="cards-grid">
-        <!-- Kolom Kiri: Kartu Tinggi -->
-        <div class="cards-col">
-          <!-- Personal Info Card -->
-          <section class="card">
-            <div class="card-header">
-              <h3 class="card-title">Informasi Pribadi</h3>
-              <button @click="editMode = !editMode" class="btn-icon">
-                <Edit2 v-if="!editMode" class="icon-sm" />
-                <X v-else class="icon-sm" />
+
+        <!-- Informasi Pribadi -->
+        <section class="card">
+          <div class="card-header">
+            <h3 class="card-title">Informasi Pribadi</h3>
+            <button @click="editMode = !editMode" class="btn-icon">
+              <Edit2 v-if="!editMode" class="icon-sm" />
+              <X v-else class="icon-sm" />
+            </button>
+          </div>
+
+          <div v-if="!editMode" class="info-list">
+            <div class="info-item">
+              <div class="info-label">
+                <User class="icon-sm text-blue" />
+                <span>Nama Lengkap</span>
+              </div>
+              <span class="info-value">{{ profile.name || '-' }}</span>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">
+                <Users class="icon-sm text-blue" />
+                <span>Jenis Kelamin</span>
+              </div>
+              <span class="info-value">{{ genderLabel }}</span>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">
+                <Home class="icon-sm text-blue" />
+                <span>Alamat</span>
+              </div>
+              <span class="info-value">{{ profile.address || '-' }}</span>
+            </div>
+          </div>
+
+          <!-- Edit Form -->
+          <form v-else @submit.prevent="updateProfile" class="edit-form">
+            <div class="form-group">
+              <label class="form-label">Nama Lengkap</label>
+              <input 
+                v-model="editForm.name" 
+                type="text" 
+                class="form-input"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input 
+                v-model="editForm.email" 
+                type="email" 
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">No. HP</label>
+              <input 
+                v-model="editForm.phone" 
+                type="tel" 
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Alamat</label>
+              <textarea 
+                v-model="editForm.address" 
+                class="form-textarea"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" @click="cancelEdit" class="btn btn-secondary">
+                Batal
+              </button>
+              <button type="submit" class="btn btn-primary" :disabled="saving">
+                {{ saving ? 'Menyimpan...' : 'Simpan' }}
               </button>
             </div>
+          </form>
+        </section>
 
-            <div v-if="!editMode" class="info-list">
-              <div class="info-item">
-                <div class="info-label">
-                  <User class="icon-sm text-teal" />
-                  <span>Nama Lengkap</span>
-                </div>
-                <span class="info-value">{{ profile.name || '-' }}</span>
+        <!-- Kontak -->
+        <section class="card">
+          <h3 class="card-title">Kontak</h3>
+          
+          <div class="info-list">
+            <div class="info-item">
+              <div class="info-label">
+                <Mail class="icon-sm text-cyan" />
+                <span>Email</span>
               </div>
-
-              <div class="info-item">
-                <div class="info-label">
-                  <CreditCard class="icon-sm text-teal" />
-                  <span>NIP</span>
-                </div>
-                <span class="info-value">{{ profile.nip || profile.username || '-' }}</span>
-              </div>
-
-              <div class="info-item">
-                <div class="info-label">
-                  <BookOpen class="icon-sm text-teal" />
-                  <span>Mata Pelajaran</span>
-                </div>
-                <span class="info-value">{{ profile.subject || profile.mapel || '-' }}</span>
-              </div>
-
-              <div class="info-item">
-                <div class="info-label">
-                  <Users class="icon-sm text-teal" />
-                  <span>Jenis Kelamin</span>
-                </div>
-                <span class="info-value">{{ genderLabel }}</span>
-              </div>
-
-              <div class="info-item">
-                <div class="info-label">
-                  <Home class="icon-sm text-teal" />
-                  <span>Alamat</span>
-                </div>
-                <span class="info-value">{{ profile.address || '-' }}</span>
-              </div>
+              <span class="info-value">{{ profile.email || '-' }}</span>
             </div>
 
-            <!-- Edit Form -->
-            <form v-else @submit.prevent="updateProfile" class="edit-form">
-              <div class="form-group">
-                <label class="form-label">Nama Lengkap</label>
-                <input 
-                  v-model="editForm.name" 
-                  type="text" 
-                  class="form-input"
-                  required
-                />
+            <div class="info-item">
+              <div class="info-label">
+                <Phone class="icon-sm text-cyan" />
+                <span>No. HP</span>
               </div>
-
-              <div class="form-group">
-                <label class="form-label">Email</label>
-                <input 
-                  v-model="editForm.email" 
-                  type="email" 
-                  class="form-input"
-                />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">No. HP</label>
-                <input 
-                  v-model="editForm.phone" 
-                  type="tel" 
-                  class="form-input"
-                />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Alamat</label>
-                <textarea 
-                  v-model="editForm.address" 
-                  class="form-textarea"
-                  rows="3"
-                ></textarea>
-              </div>
-
-              <div class="form-actions">
-                <button type="button" @click="cancelEdit" class="btn btn-secondary">
-                  Batal
-                </button>
-                <button type="submit" class="btn btn-primary" :disabled="saving">
-                  {{ saving ? 'Menyimpan...' : 'Simpan' }}
-                </button>
-              </div>
-            </form>
-          </section>
-        </div>
-
-        <!-- Kolom Kanan: Tumpukan Kartu Pendek -->
-        <div class="cards-col">
-          <!-- Contact Info Card -->
-          <section class="card">
-            <h3 class="card-title">Kontak</h3>
-            
-            <div class="info-list">
-              <div class="info-item">
-                <div class="info-label">
-                  <Mail class="icon-sm text-cyan" />
-                  <span>Email</span>
-                </div>
-                <span class="info-value">{{ profile.email || '-' }}</span>
-              </div>
-
-              <div class="info-item">
-                <div class="info-label">
-                  <Phone class="icon-sm text-cyan" />
-                  <span>No. HP</span>
-                </div>
-                <span class="info-value">{{ profile.phone || '-' }}</span>
-              </div>
+              <span class="info-value">{{ profile.phone || '-' }}</span>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <!-- Account Info Card -->
-          <section class="card">
-            <h3 class="card-title">Informasi Akun</h3>
-            
-            <div class="info-list">
-              <div class="info-item">
-                <div class="info-label">
-                  <Key class="icon-sm text-amber" />
-                  <span>Username</span>
-                </div>
-                <span class="info-value">{{ profile.username || '-' }}</span>
+        <!-- Informasi Akun (kartu ke-3 → otomatis melebar penuh) -->
+        <section class="card">
+          <h3 class="card-title">Informasi Akun</h3>
+          
+          <div class="info-list info-list-wide">
+            <div class="info-item">
+              <div class="info-label">
+                <Key class="icon-sm text-amber" />
+                <span>Username</span>
               </div>
+              <span class="info-value">{{ profile.username || '-' }}</span>
+            </div>
 
-              <div class="info-item">
-                <div class="info-label">
-                  <Clock class="icon-sm text-amber" />
-                  <span>Bergabung Sejak</span>
-                </div>
-                <span class="info-value">{{ formatDate(profile.created_at) || '-' }}</span>
+            <div class="info-item">
+              <div class="info-label">
+                <Clock class="icon-sm text-amber" />
+                <span>Bergabung Sejak</span>
               </div>
+              <span class="info-value">{{ formatDate(profile.created_at) || '-' }}</span>
+            </div>
 
-              <div class="info-item">
-                <div class="info-label">
-                  <Shield class="icon-sm text-amber" />
-                  <span>Status Akun</span>
-                </div>
-                <span class="info-value">
-                  <span :class="profile.is_active ? 'badge badge-success' : 'badge badge-danger'">
-                    {{ profile.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                  </span>
+            <div class="info-item">
+              <div class="info-label">
+                <ShieldCheck class="icon-sm text-amber" />
+                <span>Status Akun</span>
+              </div>
+              <span class="info-value">
+                <span :class="profile.is_active ? 'badge badge-success' : 'badge badge-danger'">
+                  {{ profile.is_active ? 'Aktif' : 'Tidak Aktif' }}
                 </span>
-              </div>
+              </span>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
+
       </div>
 
-      <!-- Change Password Section -->
+      <!-- Ubah Password -->
       <section class="card">
         <h3 class="card-title">Ubah Password</h3>
         
@@ -297,25 +273,23 @@ import apiClient from '../../utils/api'
 import {
   ChevronLeft,
   User,
+  Users,
   Edit2,
   X,
-  CreditCard,
-  Users,
   Home,
   Mail,
   Phone,
   Key,
   Clock,
-  Shield,
+  ShieldCheck,
   Lock,
   CheckCircle,
-  AlertTriangle,
-  BookOpen
+  AlertTriangle
 } from 'lucide-vue-next'
 
 const roleLabel = computed(() => {
-  const r = profile.value.role || 'guru'
-  return r.charAt(0).toUpperCase() + r.slice(1)  // "guru" → "Guru"
+  const r = profile.value.role || 'administrator'
+  return r.charAt(0).toUpperCase() + r.slice(1)  // "administrator" → "Administrator"
 })
 
 const genderLabel = computed(() => {
@@ -470,5 +444,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../../assets/css/ProfileGuru.css';
+@import '../../assets/css/ProfileAdmin.css';
 </style>
