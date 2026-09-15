@@ -1,0 +1,23 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('attendances', function (Blueprint $table) {
+            // Menambahkan kolom entry_type setelah kolom notes (default-nya 'system')
+            $table->enum('entry_type', ['system', 'admin'])->default('system')->after('notes');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('attendances', function (Blueprint $table) {
+            $table->dropColumn('entry_type');
+        });
+    }
+};
