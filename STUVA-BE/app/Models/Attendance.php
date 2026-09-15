@@ -14,7 +14,7 @@ class Attendance extends Model
         'permission_request_id',
         'date',
         'status',
-        'notes',
+        'note',
     ];
 
     // Relasi ke User (Siswa)
