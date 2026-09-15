@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ParentController;
 use App\Http\Controllers\Api\DashboardAdminController;
+use App\Http\Controllers\Api\StudentAttendanceController;
+use App\Http\Controllers\Api\AdminAttendanceController;
 use Illuminate\Http\Request;
 
 // Public Route
@@ -26,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/permissions', [PermissionController::class, 'store']); // Siswa
     Route::post('/permissions/{id}/parent-approve', [PermissionController::class, 'parentApproval']); // Ortu
     Route::post('/permissions/{id}/teacher-approve', [PermissionController::class, 'teacherApproval']); // Guru
+
+    Route::get('/student/attendance-history', [StudentAttendanceController::class, 'index']);
 });
 
 // Admin Routes (Butuh Token Sanctum)
@@ -39,6 +43,12 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::post('/users', [UserController::class, 'store']);
     Route::post('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+    Route::get('/attendances', [AdminAttendanceController::class, 'index']);
+    Route::post('/attendances', [AdminAttendanceController::class, 'store']);
+    Route::get('/attendances/{id}', [AdminAttendanceController::class, 'show']);
+    Route::post('/attendances/{id}', [AdminAttendanceController::class, 'update']);
+    Route::delete('/attendances/{id}', [AdminAttendanceController::class, 'destroy']);
 });
 
 // Parent Routes (Butuh Token Sanctum)

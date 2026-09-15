@@ -18,7 +18,7 @@ return new class extends Migration
         $table->date('start_date');
         $table->date('end_date');
         $table->text('reason');
-        $table->string('attachment')->nullable(); // Lokasi path foto surat
+        $table->string('attachment')->nullable();
         $table->enum('status', [
             'pending_parent', 
             'pending_teacher', 
