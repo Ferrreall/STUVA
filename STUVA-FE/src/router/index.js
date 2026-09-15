@@ -2,12 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 
 // Import Views
-import Login from '../views/auth/login.vue'
+import Login from '../views/auth/Login.vue'
 import DashboardSiswa from '../views/siswa/DashboardSiswa.vue'
 import ProfileSiswa from '../views/siswa/ProfileSiswa.vue'
 import DashboardGuru from '../views/guru/DashboardGuru.vue'
 import ProfileGuru from '../views/guru/ProfileGuru.vue'
 import DashboardOrtu from '../views/ortu/DashboardOrtu.vue'
+import ProfileOrtu from '../views/ortu/ProfileOrtu.vue'
 import DashboardAdmin from '../views/admin/DashboardAdmin.vue'
 
 
@@ -35,6 +36,12 @@ const routes = [
     meta: { requiresAuth: true, role: 'siswa' }
   },
   {
+  path: '/siswa/presensi',
+  name: 'PresensiSiswa',
+  component: () => import('../views/siswa/PresensiSiswa.vue'),
+  meta: { requiresAuth: true, role: 'siswa' }
+  },
+  {
     path: '/guru/dashboard',
     name: 'DashboardGuru',
     component: DashboardGuru,
@@ -53,9 +60,21 @@ const routes = [
     meta: { requiresAuth: true, role: 'ortu' }
   },
   {
+    path: '/ortu/profile',
+    name: 'ProfileOrtu',
+    component: ProfileOrtu,
+    meta: { requiresAuth: true, role: 'ortu' }
+  },
+  {
     path: '/admin/dashboard',
     name: 'DashboardAdmin',
     component: DashboardAdmin,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/profile',
+    name: 'ProfileAdmin',
+    component: () => import('../views/admin/ProfileAdmin.vue'),
     meta: { requiresAuth: true, role: 'admin' }
   }
 ]

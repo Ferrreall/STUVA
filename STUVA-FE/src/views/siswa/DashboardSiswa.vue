@@ -37,10 +37,6 @@
                     <User class="icon-sm" />
                     <span>Profil Saya</span>
                   </button>
-                  <button @click="navigateTo('/siswa/settings')" class="menu-item">
-                    <Settings class="icon-sm" />
-                    <span>Pengaturan</span>
-                  </button>
                   <div class="menu-divider"></div>
                   <button @click="handleLogout" class="menu-item logout">
                     <LogOut class="icon-sm" />
@@ -122,7 +118,7 @@
       </div>
     </div>
 
-    <!-- Stat Grid 2x2 -->
+    <!-- Stat Grid -->
     <div class="stat-grid">
       <div class="stat-box bg-green-light">
         <span class="stat-label text-green">Hadir</span>
@@ -135,6 +131,10 @@
       <div class="stat-box bg-blue-light">
         <span class="stat-label text-blue">Izin</span>
         <span class="stat-value text-blue-dark">{{ attendanceStats.izin }}</span>
+      </div>
+      <div class="stat-box bg-cyan-light">
+        <span class="stat-label text-cyan">Dispen</span>
+        <span class="stat-value text-cyan-dark">{{ attendanceStats.dispen }}</span>
       </div>
       <div class="stat-box bg-red-light">
         <span class="stat-label text-red">Alpha</span>
@@ -411,15 +411,14 @@ const buildPhotoUrl = (path) => {
 
 // ===== Chart Presensi =====
 const totalHari = computed(() => {
-  const { hadir, sakit, izin, alpha } = attendanceStats.value
-  return hadir + sakit + izin + alpha
+  const { hadir, sakit, izin, dispen, alpha } = attendanceStats.value
+  return hadir + sakit + izin + dispen + alpha
 })
 
 const chartData = computed(() => {
-  const { hadir, sakit, izin, alpha } = attendanceStats.value
-  const total = hadir + sakit + izin + alpha
+  const { hadir, sakit, izin, dispen, alpha } = attendanceStats.value
+  const total = hadir + sakit + izin + dispen + alpha
 
-  // Handle kondisi belum ada data sama sekali
   if (total === 0) {
     return {
       labels: ['Belum ada data'],
@@ -434,15 +433,15 @@ const chartData = computed(() => {
   }
 
   return {
-    labels: ['Hadir', 'Sakit', 'Izin', 'Alpha'],
+    labels: ['Hadir', 'Sakit', 'Izin', 'Dispen', 'Alpha'],
     datasets: [{
-      data: [hadir, sakit, izin, alpha],
-      backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#f43f5e'],   // Hadir, Sakit, Izin, Alpha
-      hoverBackgroundColor: ['#059669', '#d97706', '#7c3aed', '#e11d48'],
+      data: [hadir, sakit, izin, dispen, alpha],
+      backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f43f5e'],
+      hoverBackgroundColor: ['#059669', '#d97706', '#7c3aed', '#0891b2', '#e11d48'],
       borderWidth: 0,
-      borderRadius: 6,   // sudut melengkung ala modern donut
-      spacing: 3,        // gap antar segmen
-      hoverOffset: 8     // segmen "melebar" saat di-hover
+      borderRadius: 6,
+      spacing: 3,
+      hoverOffset: 8
     }]
   }
 })
@@ -504,11 +503,12 @@ const todayLabel = new Date().toLocaleDateString('id-ID', {
 })
 
 const attendanceStats = ref({
-  percentage: 88,
-  hadir: 40,
-  sakit: 2,
-  izin: 1,
-  alpha: 3
+  percentage: 0,
+  hadir: 0,
+  sakit: 0,
+  izin: 0,
+  dispen: 0,
+  alpha: 0
 })
 
 const mdmStatus = ref({
@@ -563,6 +563,65 @@ const fetchPermissions = async () => {
   }
 }
 
+// ===== Fetch statistik presensi (API sama dengan halaman riwayat) =====
+const normalizeStatus = (s) => {
+  if (!s) return 'alpha'
+  const v = String(s).toLowerCase().trim()
+  const map = {
+    hadir: 'hadir', present: 'hadir', masuk: 'hadir',
+    izin: 'izin', permission: 'izin',
+    sakit: 'sakit', sick: 'sakit',
+    dispen: 'dispen', dispensasi: 'dispen',
+    alpha: 'alpha', absent: 'alpha', alpa: 'alpha'
+  }
+  return map[v] || v
+}
+
+const fetchAttendanceStats = async () => {
+  try {
+    console.log('📡 Fetching attendance stats...')
+    const res = await apiClient.get('/siswa/attendance-history', {
+      params: { per_page: 500 }
+    })
+
+    const root = res.data || {}
+
+    // Backend sudah kirim "summary" — langsung pakai
+    const s = root.summary
+    if (s) {
+      attendanceStats.value = {
+        hadir: s.hadir || 0,
+        sakit: s.sakit || 0,
+        izin: s.izin || 0,
+        dispen: s.dispen || 0,
+        alpha: s.alpha || 0,
+        percentage: 0
+      }
+    } else {
+      // Fallback: hitung sendiri dari items kalau summary nggak ada
+      const items = Array.isArray(root.data)
+        ? root.data
+        : Array.isArray(root.data?.data) ? root.data.data : []
+
+      const stats = { hadir: 0, sakit: 0, izin: 0, dispen: 0, alpha: 0 }
+      items.forEach(item => {
+        const k = normalizeStatus(item.status)
+        if (stats[k] !== undefined) stats[k]++
+      })
+      attendanceStats.value = { ...stats, percentage: 0 }
+    }
+
+    // Persentase = hadir / total
+    const t = totalHari.value
+    attendanceStats.value.percentage = t > 0
+      ? Math.round((attendanceStats.value.hadir / t) * 100)
+      : 0
+
+    console.log('✅ Attendance stats:', attendanceStats.value)
+  } catch (error) {
+    console.error('❌ Error fetching attendance stats:', error)
+  }
+}
 
 // Format waktu relatif
 const formatTimeAgo = (dateString) => {
@@ -767,6 +826,7 @@ onMounted(() => {
   
   // Fetch riwayat pengajuan saat component dimount
   fetchPermissions()
+  fetchAttendanceStats()
 })
 
 onUnmounted(() => {

@@ -37,10 +37,6 @@
                     <User class="icon-sm" />
                     <span>Profil Saya</span>
                   </button>
-                  <button @click="navigateTo('/ortu/settings')" class="menu-item">
-                    <Settings class="icon-sm" />
-                    <span>Pengaturan</span>
-                  </button>
                   <div class="menu-divider"></div>
                   <button @click="handleLogout" class="menu-item logout">
                     <LogOut class="icon-sm" />
@@ -58,8 +54,8 @@
       <!-- Hero Greeting -->
       <section class="hero-greeting col-12">
         <div>
-          <p class="hero-hi">Halo, {{ parent.name.split(' ')[0] }} 👋</p>
-          <p class="hero-sub">Pantau kehadiran {{ parent.studentName }} di sini.</p>
+          <p class="hero-hi">{{ greeting }}, {{ parent.name.split(' ')[0] }} 👋</p>
+          <p class="hero-sub">{{ todayLabel }} — Pantau kehadiran {{ parent.studentName }} di sini.</p>
         </div>
         <div class="hero-emoji">🌅</div>
       </section>
@@ -340,6 +336,20 @@ const parent = ref({
   studentClass: 'XII RPL 1',
   studentNISN: '1234567890',
   attendancePercentage: 88
+})
+
+// greeting based on time of day
+
+const greeting = computed(() => {
+  const h = new Date().getHours()
+  if (h < 11) return 'Selamat pagi'
+  if (h < 15) return 'Selamat siang'
+  if (h < 19) return 'Selamat sore'
+  return 'Selamat malam'
+})
+
+const todayLabel = new Date().toLocaleDateString('id-ID', {
+  weekday: 'long', day: 'numeric', month: 'long'
 })
 
 // ===== Helpers =====

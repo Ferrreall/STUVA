@@ -35,16 +35,15 @@
         </div>
         <h2 class="profile-name">{{ profile.name || '-' }}</h2>
         <p class="profile-role">{{ roleLabel }}</p>
-        <p v-if="profile.subject || profile.mapel" class="profile-subject">
-          <BookOpen class="icon-xs" />
-          {{ profile.subject || profile.mapel }}
+        <p v-if="studentName" class="profile-subject">
+          <GraduationCap class="icon-xs" />
+          Wali dari {{ studentName }}
         </p>
       </section>
 
       <!-- Dua Kolom Kartu -->
       <div class="cards-grid">
         <!-- Kolom Kiri: Kartu Tinggi -->
-        <div class="cards-col">
           <!-- Personal Info Card -->
           <section class="card">
             <div class="card-header">
@@ -58,7 +57,7 @@
             <div v-if="!editMode" class="info-list">
               <div class="info-item">
                 <div class="info-label">
-                  <User class="icon-sm text-teal" />
+                  <User class="icon-sm text-orange" />
                   <span>Nama Lengkap</span>
                 </div>
                 <span class="info-value">{{ profile.name || '-' }}</span>
@@ -66,23 +65,7 @@
 
               <div class="info-item">
                 <div class="info-label">
-                  <CreditCard class="icon-sm text-teal" />
-                  <span>NIP</span>
-                </div>
-                <span class="info-value">{{ profile.nip || profile.username || '-' }}</span>
-              </div>
-
-              <div class="info-item">
-                <div class="info-label">
-                  <BookOpen class="icon-sm text-teal" />
-                  <span>Mata Pelajaran</span>
-                </div>
-                <span class="info-value">{{ profile.subject || profile.mapel || '-' }}</span>
-              </div>
-
-              <div class="info-item">
-                <div class="info-label">
-                  <Users class="icon-sm text-teal" />
+                  <Users class="icon-sm text-orange" />
                   <span>Jenis Kelamin</span>
                 </div>
                 <span class="info-value">{{ genderLabel }}</span>
@@ -90,7 +73,7 @@
 
               <div class="info-item">
                 <div class="info-label">
-                  <Home class="icon-sm text-teal" />
+                  <Home class="icon-sm text-orange" />
                   <span>Alamat</span>
                 </div>
                 <span class="info-value">{{ profile.address || '-' }}</span>
@@ -146,10 +129,8 @@
               </div>
             </form>
           </section>
-        </div>
 
         <!-- Kolom Kanan: Tumpukan Kartu Pendek -->
-        <div class="cards-col">
           <!-- Contact Info Card -->
           <section class="card">
             <h3 class="card-title">Kontak</h3>
@@ -157,7 +138,7 @@
             <div class="info-list">
               <div class="info-item">
                 <div class="info-label">
-                  <Mail class="icon-sm text-cyan" />
+                  <Mail class="icon-sm text-amber" />
                   <span>Email</span>
                 </div>
                 <span class="info-value">{{ profile.email || '-' }}</span>
@@ -165,10 +146,41 @@
 
               <div class="info-item">
                 <div class="info-label">
-                  <Phone class="icon-sm text-cyan" />
+                  <Phone class="icon-sm text-amber" />
                   <span>No. HP</span>
                 </div>
                 <span class="info-value">{{ profile.phone || '-' }}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Student (Anak) Info Card -->
+          <section v-if="profile.student || profile.children" class="card">
+            <h3 class="card-title">Informasi Anak</h3>
+            
+            <div class="info-list">
+              <div class="info-item">
+                <div class="info-label">
+                  <GraduationCap class="icon-sm text-rose" />
+                  <span>Nama Anak</span>
+                </div>
+                <span class="info-value">{{ studentName }}</span>
+              </div>
+
+              <div class="info-item">
+                <div class="info-label">
+                  <School class="icon-sm text-rose" />
+                  <span>Kelas</span>
+                </div>
+                <span class="info-value">{{ studentClass }}</span>
+              </div>
+
+              <div class="info-item">
+                <div class="info-label">
+                  <CreditCard class="icon-sm text-rose" />
+                  <span>NISN</span>
+                </div>
+                <span class="info-value">{{ studentNISN }}</span>
               </div>
             </div>
           </section>
@@ -180,7 +192,7 @@
             <div class="info-list">
               <div class="info-item">
                 <div class="info-label">
-                  <Key class="icon-sm text-amber" />
+                  <Key class="icon-sm text-cyan" />
                   <span>Username</span>
                 </div>
                 <span class="info-value">{{ profile.username || '-' }}</span>
@@ -188,7 +200,7 @@
 
               <div class="info-item">
                 <div class="info-label">
-                  <Clock class="icon-sm text-amber" />
+                  <Clock class="icon-sm text-cyan" />
                   <span>Bergabung Sejak</span>
                 </div>
                 <span class="info-value">{{ formatDate(profile.created_at) || '-' }}</span>
@@ -196,7 +208,7 @@
 
               <div class="info-item">
                 <div class="info-label">
-                  <Shield class="icon-sm text-amber" />
+                  <Shield class="icon-sm text-cyan" />
                   <span>Status Akun</span>
                 </div>
                 <span class="info-value">
@@ -207,7 +219,6 @@
               </div>
             </div>
           </section>
-        </div>
       </div>
 
       <!-- Change Password Section -->
@@ -297,10 +308,10 @@ import apiClient from '../../utils/api'
 import {
   ChevronLeft,
   User,
+  Users,
   Edit2,
   X,
   CreditCard,
-  Users,
   Home,
   Mail,
   Phone,
@@ -310,18 +321,28 @@ import {
   Lock,
   CheckCircle,
   AlertTriangle,
-  BookOpen
+  School,
+  GraduationCap
 } from 'lucide-vue-next'
 
 const roleLabel = computed(() => {
-  const r = profile.value.role || 'guru'
-  return r.charAt(0).toUpperCase() + r.slice(1)  // "guru" → "Guru"
+  const r = profile.value.role || 'orang tua'
+  return r.charAt(0).toUpperCase() + r.slice(1)  // "orang tua" → "Orang tua"
 })
 
 const genderLabel = computed(() => {
   if (!profile.value.gender) return '-'
   return profile.value.gender === 'L' ? 'Laki-laki' : 'Perempuan'
 })
+
+// ===== Data anak (anti-rusak: cek beberapa kemungkinan struktur) =====
+const studentData = computed(() => {
+  return profile.value.student || (profile.value.children?.[0]) || null
+})
+
+const studentName = computed(() => studentData.value?.name || null)
+const studentClass = computed(() => studentData.value?.class_name || '-')
+const studentNISN = computed(() => studentData.value?.nisn || studentData.value?.username || '-')
 
 const router = useRouter()
 
@@ -470,5 +491,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '../../assets/css/ProfileGuru.css';
+@import '../../assets/css/ProfileOrtu.css';
 </style>

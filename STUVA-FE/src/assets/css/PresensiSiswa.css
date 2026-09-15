@@ -1,0 +1,640 @@
+/* ============================================================
+   STUVA — Riwayat Absen Siswa
+   Tema v2: "Neo Bento Aurora" — sinkron penuh dengan DashboardSiswa
+============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ============================================================
+   1. DESIGN TOKENS
+============================================================ */
+.presensi-container,
+.modal-overlay,
+.toast-notification {
+  --brand-950: #1e0a4e;
+  --brand-900: #2e1065;
+  --brand-700: #6d28d9;
+  --brand-600: #7c3aed;
+  --brand-500: #8b5cf6;
+  --brand-400: #a78bfa;
+  --brand-300: #c4b5fd;
+  --brand-100: #ede9fe;
+  --brand-50:  #f5f3ff;
+  --pink-500:  #ec4899;
+  --fuchsia-500: #d946ef;
+
+  --primary:       var(--brand-600);
+  --primary-light: var(--brand-400);
+  --primary-dark:  var(--brand-700);
+
+  /* Netral */
+  --gray-50:  #fafaff;
+  --gray-100: #f1f0f7;
+  --gray-200: #e5e3f0;
+  --gray-300: #cfccdf;
+  --gray-400: #9d99b3;
+  --gray-500: #6f6a87;
+  --gray-700: #3b3750;
+  --gray-900: #191627;
+
+  --surface:        rgba(255, 255, 255, .78);
+  --surface-strong: rgba(255, 255, 255, .94);
+
+  --content-max: 800px;
+
+  --radius-sm: 14px;
+  --radius-md: 22px;
+  --radius-lg: 26px;
+
+  --shadow-sm: 0 1px 2px rgba(30,10,78,.04), 0 8px 24px -12px rgba(30,10,78,.08);
+  --shadow-md: 0 2px 6px rgba(30,10,78,.05), 0 18px 40px -16px rgba(30,10,78,.14);
+  --shadow-xl: 0 32px 80px -16px rgba(30,10,78,.30);
+  --glow: rgba(124, 58, 237, .45);
+
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --ease-out:    cubic-bezier(.22, 1, .36, 1);
+  --transition: all .25s var(--ease-out);
+}
+
+/* ============================================================
+   2. CONTAINER — aurora beranimasi
+============================================================ */
+.presensi-container {
+  min-height: 100vh;
+  padding-bottom: 80px;
+  color: var(--gray-900);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  background-color: #f4f2fb;
+  position: relative;
+  overflow-x: clip;
+}
+
+.presensi-container::before,
+.presensi-container::after {
+  content: '';
+  position: fixed;
+  z-index: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+}
+.presensi-container::before {
+  width: 560px; height: 560px;
+  top: -180px; left: -160px;
+  background: radial-gradient(circle at 30% 30%, rgba(167,139,250,.35), transparent 70%);
+  animation: drift-a 22s ease-in-out infinite alternate;
+}
+.presensi-container::after {
+  width: 520px; height: 520px;
+  bottom: -160px; right: -140px;
+  background: radial-gradient(circle at 70% 70%, rgba(244,114,182,.26), transparent 70%);
+  animation: drift-b 26s ease-in-out infinite alternate;
+}
+
+@keyframes drift-a { from { transform: translate(0,0) scale(1); } to { transform: translate(70px, 60px) scale(1.15); } }
+@keyframes drift-b { from { transform: translate(0,0) scale(1); } to { transform: translate(-60px, -50px) scale(1.1); } }
+
+/* ============================================================
+   3. HEADER — dark aurora glass + garis cahaya
+============================================================ */
+.header {
+  position: sticky;
+  top: 14px;
+  z-index: 100;
+  width: min(var(--content-max), calc(100% - 32px));
+  margin: 14px auto 0;
+  padding: 11px 14px;
+  color: #ffffff;
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 200% at 0% 0%,   rgba(236,72,153,.30), transparent 50%),
+    radial-gradient(120% 200% at 100% 0%, rgba(103,232,249,.16), transparent 45%),
+    linear-gradient(120deg, #241056 0%, #3b1d84 45%, #5b21b6 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 12px 32px -10px var(--glow);
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(255,255,255,.45), rgba(255,255,255,.06) 40%, rgba(236,72,153,.45));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-back {
+  width: 38px; height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.14);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-back:hover {
+  background: rgba(255,255,255,.28);
+  transform: translateX(-3px);
+}
+.btn-back:active { transform: scale(.92); }
+
+.header-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -.02em;
+  background: linear-gradient(90deg, #ffffff 30%, #f5d0fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-spacer { width: 38px; }
+
+/* ============================================================
+   4. LOADING STATE
+============================================================ */
+.loading-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 16px;
+}
+
+.spinner-large {
+  width: 48px; height: 48px;
+  border: 4px solid var(--brand-100);
+  border-top-color: var(--brand-600);
+  border-right-color: var(--pink-500);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-size: .938rem;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+/* ============================================================
+   5. MAIN CONTENT
+============================================================ */
+.main-content {
+  position: relative;
+  z-index: 1;
+  width: min(var(--content-max), 100%);
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.main-content > * {
+  animation: rise-in .5s var(--ease-out) both;
+}
+.main-content > *:nth-child(2) { animation-delay: .06s; }
+.main-content > *:nth-child(3) { animation-delay: .12s; }
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px); }
+}
+
+/* ============================================================
+   6. CARD — glass bento + border gradien saat hover
+============================================================ */
+.card {
+  position: relative;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,.85);
+  box-shadow: var(--shadow-sm);
+  transition: transform .3s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(139,92,246,.55), rgba(236,72,153,.35) 60%, rgba(103,232,249,.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+.card:hover::after { opacity: 1; }
+
+/* ============================================================
+   7. NAVIGASI BULAN + RINGKASAN
+============================================================ */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.month-btn {
+  width: 38px; height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-radius: 50%;
+  color: var(--brand-600);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.month-btn:hover:not(:disabled) {
+  background: var(--brand-100);
+  transform: scale(1.08);
+}
+.month-btn:active:not(:disabled) { transform: scale(.92); }
+.month-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+.month-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  padding: 9px 20px;
+  border-radius: 999px;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+}
+
+.month-label .icon-sm { color: var(--brand-600); }
+
+/* --- ringkasan 5 status --- */
+.month-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.mstat {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 4px 12px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid var(--gray-200);
+  transition: transform .25s var(--ease-spring), box-shadow .25s ease, border-color .25s ease;
+}
+
+/* garis aksen warna di atas tiap tile */
+.mstat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 22%; right: 22%;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  opacity: .9;
+}
+.ms-hadir::before  { background: #10b981; }
+.ms-izin::before   { background: #8b5cf6; }
+.ms-sakit::before  { background: #f59e0b; }
+.ms-dispen::before { background: #06b6d4; }
+.ms-alpha::before  { background: #f43f5e; }
+
+.mstat:hover { transform: translateY(-3px); }
+.ms-hadir:hover  { box-shadow: 0 10px 22px -6px rgba(16,185,129,.35); border-color: #a7f3d0; }
+.ms-izin:hover   { box-shadow: 0 10px 22px -6px rgba(139,92,246,.35); border-color: #ddd6fe; }
+.ms-sakit:hover  { box-shadow: 0 10px 22px -6px rgba(245,158,11,.35); border-color: #fde68a; }
+.ms-dispen:hover { box-shadow: 0 10px 22px -6px rgba(6,182,212,.35);  border-color: #a5f3fc; }
+.ms-alpha:hover  { box-shadow: 0 10px 22px -6px rgba(244,63,94,.35);  border-color: #fecdd3; }
+
+.mstat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.mstat-label {
+  margin-top: 6px;
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--gray-400);
+}
+
+.ms-hadir  .mstat-value { color: #059669; }
+.ms-izin   .mstat-value { color: #7c3aed; }
+.ms-sakit  .mstat-value { color: #b45309; }
+.ms-dispen .mstat-value { color: #0891b2; }
+.ms-alpha  .mstat-value { color: #e11d48; }
+
+/* ============================================================
+   8. FILTER CHIP
+============================================================ */
+.filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--gray-200);
+  background: rgba(255,255,255,.85);
+  color: var(--gray-500);
+  font-weight: 600;
+  font-size: .813rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filter-chip:hover {
+  border-color: var(--brand-400);
+  color: var(--brand-700);
+  transform: translateY(-1px);
+}
+
+.filter-chip.active {
+  background: linear-gradient(135deg, var(--brand-500), var(--fuchsia-500));
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 6px 14px -4px rgba(124,58,237,.5);
+}
+
+/* ============================================================
+   9. DAFTAR ABSEN
+============================================================ */
+.att-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.att-item {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  background: #ffffff;
+  transition: transform .25s var(--ease-out), box-shadow .25s ease, border-color .25s ease;
+}
+
+/* strip aksen status di kiri */
+.att-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--gray-300);
+}
+.att-item.s-hadir::before  { background: linear-gradient(180deg, #34d399, #10b981); }
+.att-item.s-izin::before   { background: linear-gradient(180deg, #a78bfa, #8b5cf6); }
+.att-item.s-sakit::before  { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+.att-item.s-dispen::before { background: linear-gradient(180deg, #22d3ee, #06b6d4); }
+.att-item.s-alpha::before  { background: linear-gradient(180deg, #fb7185, #f43f5e); }
+
+.att-item:hover {
+  transform: translateX(4px);
+  border-color: var(--brand-300);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- kotak tanggal --- */
+.att-date {
+  width: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 9px 0 7px;
+  border-radius: 14px;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+}
+
+.att-dayname {
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--gray-400);
+}
+
+.att-daynum {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--brand-700);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- info tengah --- */
+.att-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.att-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  width: fit-content;
+}
+
+.badge-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.b-hadir  { background: #d1fae5; color: #047857; }
+.b-izin   { background: #ede9fe; color: #6d28d9; }
+.b-sakit  { background: #fef3c7; color: #92400e; }
+.b-dispen { background: #cffafe; color: #0e7490; }
+.b-alpha  { background: #ffe4e6; color: #be123c; }
+
+.att-times {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.att-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.att-time .icon-xs { color: var(--brand-500); }
+
+.att-sep { color: var(--gray-300); }
+
+.att-note {
+  margin: 0;
+  font-size: .78rem;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+/* --- metode absen --- */
+.att-method {
+  width: 36px; height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  color: var(--brand-600);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   10. EMPTY STATE
+============================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  gap: 12px;
+  border: 1.5px dashed var(--brand-300);
+  border-radius: 18px;
+  background: rgba(245,243,255,.5);
+}
+
+.empty-state .icon-lg {
+  width: 48px; height: 48px;
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--brand-100), #fae8ff);
+  color: var(--brand-600);
+  opacity: 1;
+}
+
+.empty-text {
+  font-size: .875rem;
+  color: var(--gray-400);
+  margin: 0;
+}
+
+/* ============================================================
+   11. ICONS
+============================================================ */
+.icon-xs { width: 13px; height: 13px; }
+.icon-sm { width: 16px; height: 16px; }
+.icon-md { width: 20px; height: 20px; }
+.icon-lg { width: 48px; height: 48px; }
+
+/* ============================================================
+   12. SCROLLBAR, SELECTION & FOCUS
+============================================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--brand-300); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-400); }
+
+::selection { background: #ddd6fe; color: var(--brand-950); }
+
+.btn-back:focus-visible,
+.month-btn:focus-visible,
+.filter-chip:focus-visible {
+  outline: 2.5px solid var(--brand-500);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   13. RESPONSIVE
+============================================================ */
+@media (max-width: 640px) {
+  .header { width: calc(100% - 20px); margin-top: 8px; }
+
+  .main-content { padding: 18px 12px; }
+
+  .card { padding: 16px; }
+
+  .month-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .att-item { gap: 10px; padding: 11px 12px; }
+  .att-date { width: 48px; }
+}
+
+/* ============================================================
+   14. REDUCED MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

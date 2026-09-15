@@ -1,6 +1,6 @@
 /* ============================================================
-   STUVA — Profil Siswa
-   Tema v2: "Neo Bento Aurora" — sinkron penuh dengan DashboardSiswa
+   STUVA — Profil Guru
+   Tema v2: "Neo Bento Emerald" — sinkron penuh dengan DashboardGuru
 ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -13,18 +13,18 @@
 .modal-overlay,
 .toast-notification {
   /* Brand */
-  --brand-950: #1e0a4e;
-  --brand-900: #2e1065;
-  --brand-700: #6d28d9;
-  --brand-600: #7c3aed;
-  --brand-500: #8b5cf6;
-  --brand-400: #a78bfa;
-  --brand-300: #c4b5fd;
-  --brand-100: #ede9fe;
-  --brand-50:  #f5f3ff;
-  --pink-500:  #ec4899;
-  --pink-400:  #f472b6;
-  --fuchsia-500: #d946ef;
+  --brand-950: #042f2e;
+  --brand-900: #134e4a;
+  --brand-700: #0f766e;
+  --brand-600: #0d9488;
+  --brand-500: #14b8a6;
+  --brand-400: #2dd4bf;
+  --brand-300: #5eead4;
+  --brand-100: #ccfbf1;
+  --brand-50:  #f0fdfa;
+  --cyan-500:  #06b6d4;
+  --cyan-400:  #22d3ee;
+  --lime-400:  #a3e635;
 
   --primary:       var(--brand-600);
   --primary-light: var(--brand-400);
@@ -33,19 +33,19 @@
   --warning: #f59e0b;
   --danger:  #f43f5e;
 
-  /* Netral — sedikit ke ungu biar nyatu dengan brand */
-  --gray-50:  #fafaff;
-  --gray-100: #f1f0f7;
-  --gray-200: #e5e3f0;
-  --gray-300: #cfccdf;
-  --gray-400: #9d99b3;
-  --gray-500: #6f6a87;
-  --gray-700: #3b3750;
-  --gray-900: #191627;
+  /* Netral — sedikit cool biar nyatu dengan brand */
+  --gray-50:  #f8fbfb;
+  --gray-100: #eff4f4;
+  --gray-200: #e2eaea;
+  --gray-300: #cdd9d9;
+  --gray-400: #94a8a8;
+  --gray-500: #64797a;
+  --gray-700: #3a4a4b;
+  --gray-900: #162425;
 
   --surface:        rgba(255, 255, 255, .78);
   --surface-strong: rgba(255, 255, 255, .94);
-  --border-soft:    rgba(124, 58, 237, .10);
+  --border-soft:    rgba(13, 148, 136, .10);
 
   --content-max: 800px; /* profil enak dibaca nggak terlalu lebar */
 
@@ -53,11 +53,11 @@
   --radius-md: 22px;
   --radius-lg: 26px;
 
-  --shadow-sm: 0 1px 2px rgba(30,10,78,.04), 0 8px 24px -12px rgba(30,10,78,.08);
-  --shadow-md: 0 2px 6px rgba(30,10,78,.05), 0 18px 40px -16px rgba(30,10,78,.14);
-  --shadow-lg: 0 24px 60px -12px rgba(30,10,78,.22);
-  --shadow-xl: 0 32px 80px -16px rgba(30,10,78,.30);
-  --glow: rgba(124, 58, 237, .45);
+  --shadow-sm: 0 1px 2px rgba(4,47,46,.04), 0 8px 24px -12px rgba(4,47,46,.08);
+  --shadow-md: 0 2px 6px rgba(4,47,46,.05), 0 18px 40px -16px rgba(4,47,46,.14);
+  --shadow-lg: 0 24px 60px -12px rgba(4,47,46,.22);
+  --shadow-xl: 0 32px 80px -16px rgba(4,47,46,.30);
+  --glow: rgba(13, 148, 136, .45);
 
   --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
   --ease-out:    cubic-bezier(.22, 1, .36, 1);
@@ -74,12 +74,12 @@
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-  background-color: #f4f2fb;
+  background-color: #f0f8f7;
   position: relative;
   overflow-x: clip; /* clip ≠ hidden → sticky header tetap jalan */
 }
 
-/* Dua blob aurora yang melayang pelan */
+/* Dua blob aurora emerald yang melayang pelan */
 .profile-container::before,
 .profile-container::after {
   content: '';
@@ -92,13 +92,13 @@
 .profile-container::before {
   width: 560px; height: 560px;
   top: -180px; left: -160px;
-  background: radial-gradient(circle at 30% 30%, rgba(167,139,250,.35), transparent 70%);
+  background: radial-gradient(circle at 30% 30%, rgba(45,212,191,.32), transparent 70%);
   animation: drift-a 22s ease-in-out infinite alternate;
 }
 .profile-container::after {
   width: 520px; height: 520px;
   bottom: -160px; right: -140px;
-  background: radial-gradient(circle at 70% 70%, rgba(244,114,182,.26), transparent 70%);
+  background: radial-gradient(circle at 70% 70%, rgba(34,211,238,.24), transparent 70%);
   animation: drift-b 26s ease-in-out infinite alternate;
 }
 
@@ -118,9 +118,9 @@
   color: #ffffff;
   border-radius: 18px;
   background:
-    radial-gradient(120% 200% at 0% 0%,   rgba(236,72,153,.30), transparent 50%),
-    radial-gradient(120% 200% at 100% 0%, rgba(103,232,249,.16), transparent 45%),
-    linear-gradient(120deg, #241056 0%, #3b1d84 45%, #5b21b6 100%);
+    radial-gradient(120% 200% at 0% 0%,   rgba(34,211,238,.28), transparent 50%),
+    radial-gradient(120% 200% at 100% 0%, rgba(163,230,53,.14), transparent 45%),
+    linear-gradient(120deg, #042f2e 0%, #115e59 45%, #0d9488 100%);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.14),
     0 12px 32px -10px var(--glow);
@@ -133,7 +133,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(120deg, rgba(255,255,255,.45), rgba(255,255,255,.06) 40%, rgba(236,72,153,.45));
+  background: linear-gradient(120deg, rgba(255,255,255,.45), rgba(255,255,255,.06) 40%, rgba(45,212,191,.55));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -173,7 +173,7 @@
   font-weight: 800;
   margin: 0;
   letter-spacing: -.02em;
-  background: linear-gradient(90deg, #ffffff 30%, #f5d0fe);
+  background: linear-gradient(90deg, #ffffff 30%, #99f6e4);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -200,7 +200,7 @@
   width: 48px; height: 48px;
   border: 4px solid var(--brand-100);
   border-top-color: var(--brand-600);
-  border-right-color: var(--pink-500);
+  border-right-color: var(--cyan-500);
   border-radius: 50%;
   animation: spin .8s linear infinite;
 }
@@ -297,9 +297,9 @@
   border-radius: var(--radius-lg);
   color: #ffffff;
   background:
-    radial-gradient(120% 200% at 0% 0%,   rgba(236,72,153,.30), transparent 50%),
-    radial-gradient(120% 200% at 100% 0%, rgba(103,232,249,.20), transparent 45%),
-    linear-gradient(120deg, #241056 0%, #3b1d84 40%, #5b21b6 75%, #86198f 100%);
+    radial-gradient(120% 200% at 0% 0%,   rgba(34,211,238,.28), transparent 50%),
+    radial-gradient(120% 200% at 100% 0%, rgba(163,230,53,.18), transparent 45%),
+    linear-gradient(120deg, #042f2e 0%, #115e59 40%, #0d9488 75%, #0e7490 100%);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.14),
     0 18px 44px -14px var(--glow);
@@ -312,7 +312,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(120deg, rgba(255,255,255,.45), rgba(255,255,255,.06) 40%, rgba(236,72,153,.5));
+  background: linear-gradient(120deg, rgba(255,255,255,.45), rgba(255,255,255,.06) 40%, rgba(45,212,191,.55));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -326,7 +326,7 @@
   position: absolute;
   width: 180px; height: 180px;
   border-radius: 50%;
-  background: rgba(244, 114, 182, .35);
+  background: rgba(34, 211, 238, .30);
   filter: blur(48px);
   left: -50px;
   bottom: -90px;
@@ -387,6 +387,24 @@
   backdrop-filter: blur(8px);
 }
 
+/* pill mapel di bawah role */
+.profile-subject {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .92);
+  margin: 10px 0 0;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .22);
+  backdrop-filter: blur(8px);
+}
+
 /* ============================================================
    7. CARD — glass bento + border gradien saat hover
 ============================================================ */
@@ -409,7 +427,7 @@
   inset: -1px;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(139,92,246,.55), rgba(236,72,153,.35) 60%, rgba(103,232,249,.4));
+  background: linear-gradient(135deg, rgba(20,184,166,.55), rgba(6,182,212,.4) 60%, rgba(163,230,53,.35));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -448,7 +466,7 @@
   content: '';
   width: 18px; height: 4px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--brand-600), var(--pink-500));
+  background: linear-gradient(90deg, var(--brand-600), var(--cyan-500));
   flex-shrink: 0;
 }
 
@@ -476,7 +494,7 @@
 .btn-icon:active { transform: scale(.92); }
 
 /* ============================================================
-   8. INFO LIST — ikon tile warna + hover glow
+   8. INFO LIST — ikon tile warna
 ============================================================ */
 .info-list {
   display: flex;
@@ -532,7 +550,7 @@
 }
 
 /* ============================================================
-   9. FORM — fokus violet
+   9. FORM — fokus emerald
 ============================================================ */
 .edit-form {
   display: flex;
@@ -565,9 +583,6 @@
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 
-/* panah kustom date picker konsisten */
-.form-input[type="date"] { cursor: pointer; }
-
 .form-input:hover,
 .form-textarea:hover { border-color: var(--brand-400); }
 
@@ -575,7 +590,7 @@
 .form-textarea:focus {
   outline: none;
   border-color: var(--brand-500);
-  box-shadow: 0 0 0 4px rgba(139, 92, 246, .14);
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, .14);
 }
 
 .form-textarea {
@@ -592,7 +607,7 @@
 }
 
 /* ============================================================
-   10. BUTTONS — gradien candy + kilau menyapu
+   10. BUTTONS — gradien emerald + kilau menyapu
 ============================================================ */
 .btn {
   position: relative;
@@ -625,10 +640,10 @@
 
 /* kilau menyapu di tombol utama */
 .btn-primary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 45%, #d946ef 100%);
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 45%, #0891b2 100%);
   background-size: 150% 150%;
   color: #ffffff;
-  box-shadow: 0 8px 20px -6px rgba(124, 58, 237, .55);
+  box-shadow: 0 8px 20px -6px rgba(13, 148, 136, .55);
 }
 .btn-primary::before {
   content: '';
@@ -642,7 +657,7 @@
 .btn-primary:hover:not(:disabled)::before { transform: translateX(120%); }
 .btn-primary:hover:not(:disabled) {
   background-position: 100% 100%;
-  box-shadow: 0 12px 26px -6px rgba(124, 58, 237, .6);
+  box-shadow: 0 12px 26px -6px rgba(13, 148, 136, .6);
   transform: translateY(-2px);
 }
 .btn-primary:active:not(:disabled) { transform: translateY(0) scale(.96); }
@@ -671,7 +686,7 @@
   background: var(--brand-50);
   border-color: var(--brand-600);
   transform: translateY(-2px);
-  box-shadow: 0 8px 18px -6px rgba(124, 58, 237, .35);
+  box-shadow: 0 8px 18px -6px rgba(13, 148, 136, .35);
 }
 .btn-outline:active { transform: scale(.96); }
 
@@ -713,7 +728,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(30, 10, 78, .45);
+  background: rgba(4, 40, 36, .45);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
@@ -764,7 +779,7 @@
   font-weight: 800;
   margin: 0;
   letter-spacing: -.02em;
-  background: linear-gradient(90deg, var(--brand-700), var(--pink-500));
+  background: linear-gradient(90deg, var(--brand-700), var(--cyan-500));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -867,15 +882,15 @@
    14. ICONS & COLOR UTILITIES
    ("text-*" otomatis jadi tile di .info-label)
 ============================================================ */
+.icon-xs { width: 14px; height: 14px; }
 .icon-sm { width: 16px; height: 16px; }
 .icon-md { width: 20px; height: 20px; }
 .icon-xl { width: 64px; height: 64px; }
 
-.text-blue   { color: var(--brand-600); background: linear-gradient(135deg, #f5f3ff, #ddd6fe); }
-.text-green  { color: #059669; background: linear-gradient(135deg, #ecfdf5, #d1fae5); }
-.text-purple { color: #c026d3; background: linear-gradient(135deg, #fae8ff, #f5d0fe); }
-.text-orange { color: #b45309; background: linear-gradient(135deg, #fffbeb, #fef3c7); }
-.text-red    { color: #e11d48; }
+.text-teal  { color: var(--brand-600); background: linear-gradient(135deg, #f0fdfa, #ccfbf1); }
+.text-cyan  { color: #0e7490; background: linear-gradient(135deg, #ecfeff, #cffafe); }
+.text-amber { color: #b45309; background: linear-gradient(135deg, #fffbeb, #fef3c7); }
+.text-red   { color: #e11d48; }
 
 /* ============================================================
    15. SCROLLBAR, SELECTION & FOCUS
@@ -885,7 +900,7 @@
 ::-webkit-scrollbar-thumb { background: var(--brand-300); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--brand-400); }
 
-::selection { background: #ddd6fe; color: var(--brand-950); }
+::selection { background: #ccfbf1; color: var(--brand-950); }
 
 .btn:focus-visible,
 .btn-back:focus-visible,
