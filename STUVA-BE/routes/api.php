@@ -26,10 +26,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route Permission Requests (Multi-Approval)
     Route::get('/permissions', [PermissionController::class, 'index']);
     Route::post('/permissions', [PermissionController::class, 'store']); // Siswa
-    Route::post('/permissions/{id}/parent-approve', [PermissionController::class, 'parentApproval']); // Ortu
     Route::post('/permissions/{id}/teacher-approve', [PermissionController::class, 'teacherApproval']); // Guru
-
-    Route::get('/student/attendance-history', [StudentAttendanceController::class, 'index']);
+    Route::post('/permissions/{id}/parent-approve', [PermissionController::class, 'parentApproval']); // Ortu
+    Route::get('/siswa/attendance-history', [StudentAttendanceController::class, 'index']);
 });
 
 // Admin Routes (Butuh Token Sanctum)
@@ -52,7 +51,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 });
 
 // Parent Routes (Butuh Token Sanctum)
-Route::middleware(['auth:sanctum'])->prefix('parent')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('ortu')->group(function () {
     Route::get('/child-status', [ParentController::class, 'getChildStatus']);
     Route::get('/permissions', [ParentController::class, 'getPendingPermissions']);
 });
