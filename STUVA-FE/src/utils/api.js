@@ -28,16 +28,21 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Jika unauthorized (401), redirect ke login
+    // Jika unauthorized (401), hanya redirect jika bukan sedang submit form
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('role')
-      localStorage.removeItem('username')
-      localStorage.removeItem('user')
+      // Cek apakah ini request ke endpoint tertentu yang tidak boleh auto-redirect
+      const isPermissionRequest = error.config?.url?.includes('/permission')
 
-      // Redirect ke login jika belum di halaman login
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
+      if (!isPermissionRequest) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('role')
+        localStorage.removeItem('username')
+        localStorage.removeItem('user')
+
+        // Redirect ke login jika belum di halaman login
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
       }
     }
     return Promise.reject(error);

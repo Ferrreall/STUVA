@@ -15,6 +15,7 @@ class Attendance extends Model
         'date',
         'status',
         'notes',
+        'entry_type', // Menandai apakah entri dibuat oleh Admin atau Siswa
     ];
 
     // Relasi ke User (Siswa)
