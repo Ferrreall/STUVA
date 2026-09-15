@@ -567,5 +567,5 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import '../../assets/css/DashboardOrTu.css';
+@import '../../assets/css/DashboardOrtu.css';
 </style>
