@@ -26,23 +26,30 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route Permission Requests (Multi-Approval)
     Route::get('/permissions', [PermissionController::class, 'index']);
     Route::post('/permissions', [PermissionController::class, 'store']); // Siswa
-    Route::post('/permissions/{id}/parent-approve', [PermissionController::class, 'parentApproval']); // Ortu
     Route::post('/permissions/{id}/teacher-approve', [PermissionController::class, 'teacherApproval']); // Guru
+    Route::post('/permissions/{id}/parent-approve', [PermissionController::class, 'parentApproval']); // Ortu
+    Route::get('/siswa/attendance-history', [StudentAttendanceController::class, 'index']);
 
-    Route::get('/student/attendance-history', [StudentAttendanceController::class, 'index']);
+    // Route Change Password
+    Route::post('/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/profile/change-password', [AuthController::class, 'changePassword']);
+
+    // Crud User (Admin)
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/stats', [UserController::class, 'getStats']);
+    Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::post('/users', [UserController::class, 'store']);
+    Route::post('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
 });
 
 // Admin Routes (Butuh Token Sanctum)
 Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
     Route::get('/dashboard/overview', [DashboardAdminController::class, 'overview']);
-
     Route::get('/students', [UserController::class, 'getStudents']);
-    Route::get('/users', [UserController::class, 'index']);
-    Route::get('/users/{id}', [UserController::class, 'show']);
-    Route::post('/users', [UserController::class, 'store']);
-    Route::post('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+    // Route untuk mendapatkan statistik jumlah user berdasarkan role
 
     Route::get('/attendances', [AdminAttendanceController::class, 'index']);
     Route::post('/attendances', [AdminAttendanceController::class, 'store']);
@@ -52,7 +59,8 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 });
 
 // Parent Routes (Butuh Token Sanctum)
-Route::middleware(['auth:sanctum'])->prefix('parent')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('ortu')->group(function () {
+    Route::get('/attendance-history', [StudentAttendanceController::class, 'index']);
     Route::get('/child-status', [ParentController::class, 'getChildStatus']);
     Route::get('/permissions', [ParentController::class, 'getPendingPermissions']);
 });
