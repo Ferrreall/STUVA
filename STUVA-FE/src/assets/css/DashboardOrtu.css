@@ -1201,6 +1201,261 @@
 }
 
 /* ============================================================
+   17. REKAP PRESENSI — progress + donut + stat grid
+============================================================ */
+.progress-section { margin-bottom: 20px; }
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progress-label { font-size: .875rem; font-weight: 600; color: var(--gray-700); }
+
+.progress-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  background-image: linear-gradient(90deg, var(--brand-500), var(--amber-500));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.progress-value.text-red   { background-image: linear-gradient(90deg, #fb7185, #e11d48); }
+.progress-value.text-green { background-image: linear-gradient(90deg, #34d399, #059669); }
+
+.progress-bar-bg {
+  height: 10px;
+  width: 100%;
+  background: rgba(234,88,12,.08);
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(67,20,7,.08);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width .8s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+.progress-bar-fill.bg-green { box-shadow: 0 0 12px rgba(16,185,129,.45); background: linear-gradient(90deg, #34d399, #10b981); }
+.progress-bar-fill.bg-red   { box-shadow: 0 0 12px rgba(244,63,94,.45); background: linear-gradient(90deg, #fb7185, #f43f5e); }
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* --- stat grid --- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  text-align: center;
+}
+
+.stat-box {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 14px 8px 12px;
+  background: #ffffff;
+  border: 1px solid var(--gray-200);
+  transition: transform .25s var(--ease-spring), box-shadow .25s ease, border-color .25s ease;
+  cursor: default;
+}
+
+.stat-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 22%; right: 22%;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  opacity: .9;
+}
+.bg-green-light::before  { background: #10b981; }
+.bg-yellow-light::before { background: #f59e0b; }
+.bg-purple-light::before { background: #8b5cf6; }
+.bg-cyan-light::before   { background: #06b6d4; }
+.bg-red-light::before    { background: #f43f5e; }
+
+.stat-box:hover { transform: translateY(-3px); }
+
+.bg-green-light  { background: linear-gradient(180deg, #f0fdf7, #ffffff 70%); }
+.bg-yellow-light { background: linear-gradient(180deg, #fffdf3, #ffffff 70%); }
+.bg-purple-light { background: linear-gradient(180deg, #f8f6ff, #ffffff 70%); }
+.bg-cyan-light   { background: linear-gradient(180deg, #f0fdff, #ffffff 70%); }
+.bg-red-light    { background: linear-gradient(180deg, #fff5f6, #ffffff 70%); }
+
+.bg-green-light:hover  { box-shadow: 0 10px 22px -6px rgba(16,185,129,.35); border-color: #a7f3d0; }
+.bg-yellow-light:hover { box-shadow: 0 10px 22px -6px rgba(245,158,11,.35); border-color: #fde68a; }
+.bg-purple-light:hover { box-shadow: 0 10px 22px -6px rgba(139,92,246,.35); border-color: #ddd6fe; }
+.bg-cyan-light:hover   { box-shadow: 0 10px 22px -6px rgba(6,182,212,.35);  border-color: #a5f3fc; }
+.bg-red-light:hover    { box-shadow: 0 10px 22px -6px rgba(244,63,94,.35);  border-color: #fecdd3; }
+
+/* kotak ke-5 (alpha, ganjil) melebar penuh biar grid rapi */
+.summary-layout .stat-box:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+.stat-label {
+  display: block;
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- warna status --- */
+.text-green      { color: #059669; }
+.text-green-dark { color: #047857; }
+.text-yellow     { color: #b45309; }
+.text-yellow-dark{ color: #92400e; }
+.text-purple     { color: #7c3aed; }
+.text-purple-dark{ color: #6d28d9; }
+.text-cyan       { color: #0891b2; }
+.text-cyan-dark  { color: #0e7490; }
+.text-red        { color: #e11d48; }
+
+/* --- chart layout --- */
+.summary-layout { display: flex; align-items: center; gap: 20px; }
+
+.chart-wrapper {
+  position: relative;
+  width: 150px; height: 150px;
+  flex-shrink: 0;
+}
+
+.chart-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.chart-center-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-center-label {
+  font-size: .65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--gray-400);
+  margin-top: 3px;
+}
+
+.summary-layout .stat-grid {
+  flex: 1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.summary-total {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: .72rem;
+  color: var(--gray-400);
+}
+
+@media (min-width: 901px) {
+  .chart-wrapper  { width: 180px; height: 180px; }
+  .summary-layout { gap: 28px; }
+  .chart-center-value { font-size: 1.7rem; }
+}
+
+/* ============================================================
+   18. TELEMETRI — perangkat anak
+============================================================ */
+.telemetry-list { display: flex; flex-direction: column; gap: 16px; }
+
+.telemetry-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: .875rem;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--gray-200);
+  transition: var(--transition);
+}
+.telemetry-item:last-child { border-bottom: none; padding-bottom: 0; }
+.telemetry-item:hover .telemetry-label { color: var(--brand-700); }
+
+.telemetry-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--gray-500);
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.telemetry-label .icon-sm {
+  width: 36px; height: 36px;
+  padding: 9px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.7);
+}
+.telemetry-label .text-blue { background: linear-gradient(135deg, #fff7ed, #ffedd5); }
+.telemetry-label .text-red  { background: linear-gradient(135deg, #fff1f2, #fecdd3); }
+.telemetry-label .text-gray { background: var(--gray-100); }
+
+.telemetry-value-bold { font-weight: 700; color: var(--gray-900); font-variant-numeric: tabular-nums; }
+
+.telemetry-value-mono {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: .72rem;
+  color: var(--brand-700);
+  background: var(--brand-50);
+  border: 1px solid var(--border-soft);
+  padding: 4px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.telemetry-value-sub { font-size: .75rem; color: var(--gray-400); }
+
+/* ============================================================
+   19. RESPONSIVE TAMBAHAN
+============================================================ */
+@media (max-width: 640px) {
+  .stat-value { font-size: 1.1rem; }
+}
+
+@media (max-width: 360px) {
+  .summary-layout { flex-direction: column; }
+  .chart-wrapper { width: 160px; height: 160px; }
+  .summary-layout .stat-grid { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ============================================================
    16. REDUCED MOTION
 ============================================================ */
 @media (prefers-reduced-motion: reduce) {

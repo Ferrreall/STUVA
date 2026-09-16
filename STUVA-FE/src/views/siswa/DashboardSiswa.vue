@@ -78,105 +78,148 @@
         </button>
       </div>
 
-<!-- Card Ringkasan Absensi -->
-<section class="card col-8">
-  <h2 class="card-title">Rekap Presensi Semester</h2>
+      <!-- Card Ringkasan Absensi -->
+      <section class="card col-8">
+        <h2 class="card-title">Rekap Presensi Semester</h2>
 
-  <!-- Progress Bar Persentase -->
-  <div class="progress-section">
-    <div class="progress-header">
-      <span class="progress-label">Tingkat Kehadiran</span>
-      <span
-        class="progress-value"
-        :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green'"
-      >
-        {{ attendanceStats.percentage }}%
-      </span>
-    </div>
-    <div class="progress-bar-bg">
-      <div
-        class="progress-bar-fill"
-        :class="attendanceStats.percentage < 90 ? 'bg-red' : 'bg-green'"
-        :style="{ width: `${attendanceStats.percentage}%` }"
-      ></div>
-    </div>
-  </div>
+        <!-- Progress Bar Persentase -->
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-label">Tingkat Kehadiran</span>
+            <span
+              class="progress-value"
+              :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green'"
+            >
+              {{ attendanceStats.percentage }}%
+            </span>
+          </div>
+          <div class="progress-bar-bg">
+            <div
+              class="progress-bar-fill"
+              :class="attendanceStats.percentage < 90 ? 'bg-red' : 'bg-green'"
+              :style="{ width: `${attendanceStats.percentage}%` }"
+            ></div>
+          </div>
+        </div>
 
-  <!-- Chart & Detail Stat -->
-  <div class="summary-layout">
-    <!-- Doughnut Chart -->
-    <div class="chart-wrapper">
-      <Doughnut :data="chartData" :options="chartOptions" />
-      <div class="chart-center">
-        <span
-          class="chart-center-value"
-          :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green-dark'"
-        >
-          {{ attendanceStats.percentage }}%
-        </span>
-        <span class="chart-center-label">Hadir</span>
-      </div>
-    </div>
+        <!-- Chart & Detail Stat -->
+        <div class="summary-layout">
+          <!-- Doughnut Chart -->
+          <div class="chart-wrapper">
+            <Doughnut :data="chartData" :options="chartOptions" />
+            <div class="chart-center">
+              <span
+                class="chart-center-value"
+                :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green-dark'"
+              >
+                {{ attendanceStats.percentage }}%
+              </span>
+              <span class="chart-center-label">Hadir</span>
+            </div>
+          </div>
 
-    <!-- Stat Grid -->
-    <div class="stat-grid">
-      <div class="stat-box bg-green-light">
-        <span class="stat-label text-green">Hadir</span>
-        <span class="stat-value text-green-dark">{{ attendanceStats.hadir }}</span>
-      </div>
-      <div class="stat-box bg-yellow-light">
-        <span class="stat-label text-yellow">Sakit</span>
-        <span class="stat-value text-yellow-dark">{{ attendanceStats.sakit }}</span>
-      </div>
-      <div class="stat-box bg-blue-light">
-        <span class="stat-label text-blue">Izin</span>
-        <span class="stat-value text-blue-dark">{{ attendanceStats.izin }}</span>
-      </div>
-      <div class="stat-box bg-cyan-light">
-        <span class="stat-label text-cyan">Dispen</span>
-        <span class="stat-value text-cyan-dark">{{ attendanceStats.dispen }}</span>
-      </div>
-      <div class="stat-box bg-red-light">
-        <span class="stat-label text-red">Alpha</span>
-        <span class="stat-value text-red-dark">{{ attendanceStats.alpha }}</span>
-      </div>
-    </div>
-  </div>
+          <!-- Stat Grid -->
+          <div class="stat-grid">
+            <div class="stat-box bg-green-light">
+              <span class="stat-label text-green">Hadir</span>
+              <span class="stat-value text-green-dark">{{ attendanceStats.hadir }}</span>
+            </div>
+            <div class="stat-box bg-yellow-light">
+              <span class="stat-label text-yellow">Sakit</span>
+              <span class="stat-value text-yellow-dark">{{ attendanceStats.sakit }}</span>
+            </div>
+            <div class="stat-box bg-blue-light">
+              <span class="stat-label text-blue">Izin</span>
+              <span class="stat-value text-blue-dark">{{ attendanceStats.izin }}</span>
+            </div>
+            <div class="stat-box bg-cyan-light">
+              <span class="stat-label text-cyan">Dispen</span>
+              <span class="stat-value text-cyan-dark">{{ attendanceStats.dispen }}</span>
+            </div>
+            <div class="stat-box bg-red-light">
+              <span class="stat-label text-red">Alpha</span>
+              <span class="stat-value text-red-dark">{{ attendanceStats.alpha }}</span>
+            </div>
+          </div>
+        </div>
 
-  <p class="summary-total">Total {{ totalHari }} hari tercatat semester ini</p>
-</section>
+        <p class="summary-total">Total {{ totalHari }} hari tercatat semester ini</p>
+      </section>
 
-      <!-- Telemetri MDM Status (Simulasi Hardcode PWA) -->
+            <!-- Telemetri MDM Status -->
       <section class="card col-4">
         <h2 class="card-title">Status Perangkat & Telemetri</h2>
-        
+
         <div class="telemetry-list">
+          <!-- Daya Baterai -->
           <div class="telemetry-item">
             <div class="telemetry-label">
               <BatteryCharging class="icon-sm text-blue" />
               <span>Daya Baterai</span>
             </div>
-            <span class="telemetry-value-bold">{{ mdmStatus.battery }}%</span>
+            <span class="telemetry-value-bold">{{ batteryDisplay }}</span>
           </div>
 
+          <!-- Toggle Tracking Lokasi -->
           <div class="telemetry-item">
             <div class="telemetry-label">
               <MapPin class="icon-sm text-red" />
-              <span>Lokasi Terakhir</span>
+              <span>Tracking Lokasi</span>
             </div>
-            <span class="telemetry-value-mono">
-              {{ mdmStatus.latitude }}, {{ mdmStatus.longitude }}
+            <button
+              class="loc-toggle"
+              :class="{ on: locTracking }"
+              :disabled="!locSupported || !locSecure"
+              @click="toggleLocation"
+            >
+              <span class="loc-knob"></span>
+            </button>
+          </div>
+
+          <!-- Status Tracking -->
+          <div class="telemetry-item">
+            <div class="telemetry-label">
+              <Activity class="icon-sm text-gray" />
+              <span>Status</span>
+            </div>
+            <span class="loc-status" :class="`st-${locStatus}`">
+              <span class="loc-dot"></span>
+              {{ locStatusLabel }}
             </span>
           </div>
 
+          <!-- Koordinat Live -->
+          <div class="telemetry-item">
+            <div class="telemetry-label">
+              <MapPin class="icon-sm text-red" />
+              <span>Koordinat</span>
+            </div>
+            <span class="telemetry-value-mono">
+              {{ liveCoords ? `${liveCoords.latitude.toFixed(5)}, ${liveCoords.longitude.toFixed(5)}` : '—' }}
+            </span>
+          </div>
+
+          <!-- Ping Terakhir -->
           <div class="telemetry-item">
             <div class="telemetry-label">
               <Clock class="icon-sm text-gray" />
-              <span>Terakhir Diperbarui</span>
+              <span>Ping Terakhir</span>
             </div>
-            <span class="telemetry-value-sub">{{ mdmStatus.lastSync }}</span>
+            <span class="telemetry-value-sub">
+              <template v-if="liveLastPing">
+                {{ liveLastPing.toLocaleTimeString('id-ID') }}
+                {{ livePingOk ? '✓' : '✕' }}
+              </template>
+              <template v-else>—</template>
+            </span>
           </div>
         </div>
+
+        <!-- Pesan error / peringatan -->
+        <p v-if="locError" class="loc-msg error">{{ locError }}</p>
+        <p v-else-if="!locSecure" class="loc-msg warn">
+          ⚠️ Lokasi butuh HTTPS. Buka via localhost atau HTTPS.
+        </p>
       </section>
 
       <!-- Quick Action Buttons -->
@@ -192,7 +235,6 @@
         </button>
       </section>
 
-      <!-- Riwayat Pengajuan Izin/Sakit/Dispen -->
       <!-- Riwayat Pengajuan Izin/Sakit/Dispen -->
       <section class="card col-12">
         <div class="card-title-row">
@@ -376,6 +418,7 @@ import { useAuthStore } from '../../stores/authStore'
 import apiClient from '../../utils/api'
 import { Doughnut } from 'vue-chartjs'
 import { Thermometer } from 'lucide-vue-next' // tambahin ke import lucide yang udah ada
+import { useGeolocation } from '../../composables/useGeolocation'
 import { 
   Wifi, 
   AlertTriangle, 
@@ -383,6 +426,7 @@ import {
   BatteryCharging, 
   MapPin, 
   Clock, 
+  Activity,
   FilePlus, 
   Calendar,
   CheckCircle,
@@ -511,11 +555,27 @@ const attendanceStats = ref({
   alpha: 0
 })
 
-const mdmStatus = ref({
-  battery: 85,
-  latitude: -6.917464,
-  longitude: 107.619123,
-  lastSync: '10 menit yang lalu'
+
+// ===== Tracking Lokasi Live =====
+const {
+  isSupported: locSupported,
+  isSecure: locSecure,
+  status: locStatus,
+  statusLabel: locStatusLabel,
+  coords: liveCoords,
+  error: locError,
+  isTracking: locTracking,
+  lastPingAt: liveLastPing,
+  lastPingOk: livePingOk,
+  batteryLevel: liveBattery,
+  toggleTracking: toggleLocation,
+} = useGeolocation({ intervalMs: 60000 })  // ping tiap 60 detik
+
+// ===== Tampilan baterai: '--' sampai ping pertama terkirim =====
+const batteryDisplay = computed(() => {
+  if (liveBattery.value == null) return 'Tidak tersedia'  // Battery API nggak ada di browser ini
+  if (liveLastPing.value == null) return '--'             // belum pernah panggil location/ping
+  return `${liveBattery.value}%`                          // sudah pernah ping → tampilkan nilai asli
 })
 
 const formData = ref({

@@ -421,12 +421,26 @@
 ============================================================ */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
-@media (max-width: 640px) {
-  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* kartu stat yang bisa diklik */
+.stat-clickable { cursor: pointer; }
+
+.stat-arrow {
+  width: 18px; height: 18px;
+  color: var(--gray-300);
+  align-self: center;
+  transition: transform .25s var(--ease-spring), color .2s ease;
+}
+.stat-clickable:hover .stat-arrow {
+  transform: translateX(4px);
+  color: var(--sc, var(--brand-500));
 }
 
 .stat-card {
