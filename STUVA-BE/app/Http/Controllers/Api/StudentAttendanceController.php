@@ -15,6 +15,20 @@ class StudentAttendanceController extends Controller
     {
         $user = $request->user();
 
+        if ($user->role === 'ortu') {
+            // Jika user adalah orang tua, ambil student_id dari relasi
+            $studentId = $user->student_id;
+
+            if (!$studentId) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Orang tua ini tidak memiliki siswa yang terhubung.'
+                ], 400);
+            }
+
+            $user = $user->student; // Ambil data siswa terkait
+        }
+
         // Ambil riwayat absen berdasarkan user_id / student_id yang login
         // Sesuaikan nama kolom foreign key di tabel attendances (misal: 'user_id' atau 'student_id')
         $history = Attendance::where('student_id', $user->id)

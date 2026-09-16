@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\LocationLog;
+use App\Models\PermissionRequest;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
@@ -35,13 +36,15 @@ class LocationController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        // 1. Jika Siswa mencoba akses, langsung tolak (Siswa hanya mengirim koordinat via /location/ping)
+
+        // 1. Tolak Siswa
         if ($user->role === 'siswa') {
             return response()->json([
-                'message' => 'Akses ditolak. Fitur pemantauan lokasi hanya untuk Guru dan Orang Tua.'
+                'message' => 'Akses ditolak. Fitur pemantauan lokasi hanya untuk Guru, Admin, dan Orang Tua.'
             ], 403);
         }
-        // 2. Jika yang akses Ortu, hanya tampilkan lokasi anaknya sendiri
+
+        // 2. Akses Orang Tua (Lokasi anaknya saja)
         if ($user->role === 'ortu') {
             if (!$user->student_id) {
                 return response()->json(['message' => 'Data anak tidak ditemukan'], 404);
@@ -51,20 +54,41 @@ class LocationController extends Controller
                 ->latest('recorded_at')
                 ->first();
 
-            return response()->json(['data' => $latestLocation]);
+            return response()->json([
+                'status' => 'success',
+                'data'   => $latestLocation
+            ]);
         }
 
-        // 3. Jika yang akses Guru, tampilkan lokasi TERAKHIR dari SEMUA siswa
-        if ($user->role === 'guru') {
-            $latestLogs = LocationLog::with('student:id,name,class_name')
-                ->whereIn('id', function ($query) {
-                    $query->selectRaw('MAX(id)')
+        // 3. Akses Guru & Admin
+        if (in_array($user->role, ['guru', 'admin'])) {
+            // Ambil ID siswa yang SEDANG izin keluar (approved & belum kembali)
+            $activeStudentIds = PermissionRequest::where('status', 'approved')
+                ->pluck('student_id');
+
+            // Base Query: Ambil lokasi terbaru dari siswa yang sedang izin
+            $query = LocationLog::with('student:id,name,class_name')
+                ->whereIn('student_id', $activeStudentIds)
+                ->whereIn('id', function ($sub) {
+                    $sub->selectRaw('MAX(id)')
                         ->from('location_logs')
                         ->groupBy('student_id');
-                })
-                ->get();
+                });
 
-            return response()->json(['data' => $latestLogs]);
+            // Filter opsional berdasarkan kelas (jika dikirim dari FE: /api/location/live?class_name=XII RPL 1)
+            if ($request->has('class_name') && $request->class_name !== '') {
+                $query->whereHas('student', function ($q) use ($request) {
+                    $q->where('class_name', $request->class_name);
+                });
+            }
+
+            // Ambil data dengan pagination (default 20 item per page)
+            $latestLogs = $query->paginate(20);
+
+            return response()->json([
+                'status' => 'success',
+                'data'   => $latestLogs
+            ]);
         }
 
         return response()->json(['message' => 'Akses ditolak.'], 403);

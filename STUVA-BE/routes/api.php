@@ -29,6 +29,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/permissions/{id}/teacher-approve', [PermissionController::class, 'teacherApproval']); // Guru
     Route::post('/permissions/{id}/parent-approve', [PermissionController::class, 'parentApproval']); // Ortu
     Route::get('/siswa/attendance-history', [StudentAttendanceController::class, 'index']);
+
+    // Route Change Password
+    Route::post('/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/profile/change-password', [AuthController::class, 'changePassword']);
+});
+
+Route::middleware('auth:sanctum')->prefix('ortu')->group(function () {
+    Route::get('/attendance-history', [StudentAttendanceController::class, 'index']);
+
 });
 
 // Admin Routes (Butuh Token Sanctum)
