@@ -76,11 +76,112 @@
             <span class="info-label">NISN</span>
             <span class="info-value">{{ parent.studentNISN }}</span>
           </div>
-          <div class="info-item" :class="parent.attendancePercentage < 90 ? 'tile-red' : 'tile-green'">
-            <span class="info-label">Kehadiran</span>
-            <span class="info-value" :class="parent.attendancePercentage < 90 ? 'text-red' : 'text-green'">
-              {{ parent.attendancePercentage }}%
+<div class="info-item" :class="attendanceStats.percentage < 90 ? 'tile-red' : 'tile-green'">
+  <span class="info-label">Kehadiran</span>
+  <span class="info-value" :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green'">
+    {{ attendanceStats.percentage }}%
+  </span>
+</div>
+        </div>
+      </section>
+
+            <!-- Rekap Presensi Anak -->
+      <section class="card col-8">
+        <h2 class="card-title">Rekap Presensi — {{ parent.studentName }}</h2>
+
+        <!-- Progress Bar Persentase -->
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-label">Tingkat Kehadiran</span>
+            <span
+              class="progress-value"
+              :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green'"
+            >
+              {{ attendanceStats.percentage }}%
             </span>
+          </div>
+          <div class="progress-bar-bg">
+            <div
+              class="progress-bar-fill"
+              :class="attendanceStats.percentage < 90 ? 'bg-red' : 'bg-green'"
+              :style="{ width: `${attendanceStats.percentage}%` }"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Chart & Detail Stat -->
+        <div class="summary-layout">
+          <!-- Doughnut Chart -->
+          <div class="chart-wrapper">
+            <Doughnut :data="chartData" :options="chartOptions" />
+            <div class="chart-center">
+              <span
+                class="chart-center-value"
+                :class="attendanceStats.percentage < 90 ? 'text-red' : 'text-green-dark'"
+              >
+                {{ attendanceStats.percentage }}%
+              </span>
+              <span class="chart-center-label">Hadir</span>
+            </div>
+          </div>
+
+          <!-- Stat Grid -->
+          <div class="stat-grid">
+            <div class="stat-box bg-green-light">
+              <span class="stat-label text-green">Hadir</span>
+              <span class="stat-value text-green-dark">{{ attendanceStats.hadir }}</span>
+            </div>
+            <div class="stat-box bg-yellow-light">
+              <span class="stat-label text-yellow">Sakit</span>
+              <span class="stat-value text-yellow-dark">{{ attendanceStats.sakit }}</span>
+            </div>
+            <div class="stat-box bg-purple-light">
+              <span class="stat-label text-purple">Izin</span>
+              <span class="stat-value text-purple-dark">{{ attendanceStats.izin }}</span>
+            </div>
+            <div class="stat-box bg-cyan-light">
+              <span class="stat-label text-cyan">Dispen</span>
+              <span class="stat-value text-cyan-dark">{{ attendanceStats.dispen }}</span>
+            </div>
+            <div class="stat-box bg-red-light">
+              <span class="stat-label text-red">Alpha</span>
+              <span class="stat-value text-red-dark">{{ attendanceStats.alpha }}</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="summary-total">Total {{ totalHari }} hari tercatat semester ini</p>
+      </section>
+
+      <!-- Telemetri Perangkat Anak -->
+      <section class="card col-4">
+        <h2 class="card-title">Perangkat {{ parent.studentName }}</h2>
+
+        <div class="telemetry-list">
+          <div class="telemetry-item">
+            <div class="telemetry-label">
+              <BatteryCharging class="icon-sm text-blue" />
+              <span>Daya Baterai</span>
+            </div>
+            <span class="telemetry-value-bold">{{ mdmStatus.battery }}%</span>
+          </div>
+
+          <div class="telemetry-item">
+            <div class="telemetry-label">
+              <MapPin class="icon-sm text-red" />
+              <span>Lokasi Terakhir</span>
+            </div>
+            <span class="telemetry-value-mono">
+              {{ mdmStatus.latitude }}, {{ mdmStatus.longitude }}
+            </span>
+          </div>
+
+          <div class="telemetry-item">
+            <div class="telemetry-label">
+              <Clock class="icon-sm text-gray" />
+              <span>Terakhir Diperbarui</span>
+            </div>
+            <span class="telemetry-value-sub">{{ mdmStatus.lastSync }}</span>
           </div>
         </div>
       </section>
@@ -295,6 +396,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import apiClient from '../../utils/api'
+import { Doughnut } from 'vue-chartjs'
 import {
   Wifi,
   AlertTriangle,
@@ -307,8 +409,18 @@ import {
   Settings,
   LogOut,
   Thermometer,
-  Clock
+  Clock,
+  BatteryCharging,
+  MapPin
 } from 'lucide-vue-next'
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -337,6 +449,148 @@ const parent = ref({
   studentNISN: '1234567890',
   attendancePercentage: 88
 })
+
+// ===== Rekap Presensi Anak =====
+const attendanceStats = ref({
+  percentage: 0,
+  hadir: 0,
+  sakit: 0,
+  izin: 0,
+  dispen: 0,
+  alpha: 0
+})
+
+// ===== Telemetri Perangkat Anak (simulasi hardcode, sama seperti siswa) =====
+const mdmStatus = ref({
+  battery: 85,
+  latitude: -6.917464,
+  longitude: 107.619123,
+  lastSync: '10 menit yang lalu'
+})
+
+// ===== Chart =====
+const totalHari = computed(() => {
+  const { hadir, sakit, izin, dispen, alpha } = attendanceStats.value
+  return hadir + sakit + izin + dispen + alpha
+})
+
+const chartData = computed(() => {
+  const { hadir, sakit, izin, dispen, alpha } = attendanceStats.value
+  const total = hadir + sakit + izin + dispen + alpha
+
+  if (total === 0) {
+    return {
+      labels: ['Belum ada data'],
+      datasets: [{
+        data: [1],
+        backgroundColor: ['#e5e7eb'],
+        borderWidth: 0,
+        borderRadius: 0,
+        spacing: 0
+      }]
+    }
+  }
+
+  return {
+    labels: ['Hadir', 'Sakit', 'Izin', 'Dispen', 'Alpha'],
+    datasets: [{
+      data: [hadir, sakit, izin, dispen, alpha],
+      backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f43f5e'],
+      hoverBackgroundColor: ['#059669', '#d97706', '#7c3aed', '#0891b2', '#e11d48'],
+      borderWidth: 0,
+      borderRadius: 6,
+      spacing: 3,
+      hoverOffset: 8
+    }]
+  }
+})
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: '75%',
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: 'rgba(67, 20, 7, 0.92)',
+      titleColor: '#ffffff',
+      bodyColor: '#f5f0ea',
+      padding: 10,
+      cornerRadius: 10,
+      usePointStyle: true,
+      boxWidth: 8,
+      boxHeight: 8,
+      callbacks: {
+        label: (ctx) => ` ${ctx.parsed} hari`
+      }
+    }
+  },
+  animation: {
+    duration: 900,
+    easing: 'easeOutQuart',
+    animateRotate: true
+  }
+}
+
+// ===== Fetch statistik presensi anak =====
+const normalizeStatus = (s) => {
+  if (!s) return 'alpha'
+  const v = String(s).toLowerCase().trim()
+  const map = {
+    hadir: 'hadir', present: 'hadir', masuk: 'hadir',
+    izin: 'izin', permission: 'izin',
+    sakit: 'sakit', sick: 'sakit',
+    dispen: 'dispen', dispensasi: 'dispen',
+    alpha: 'alpha', absent: 'alpha', alpa: 'alpha'
+  }
+  return map[v] || v
+}
+
+const fetchAttendanceStats = async () => {
+  try {
+    console.log('📡 Fetching attendance stats (ortu)...')
+    const res = await apiClient.get('/ortu/attendance-history', {
+      params: { per_page: 500 }
+    })
+
+    const root = res.data || {}
+
+    // Backend kirim "summary" — langsung pakai (format sama dengan siswa)
+    const s = root.summary
+    if (s) {
+      attendanceStats.value = {
+        hadir: s.hadir || 0,
+        sakit: s.sakit || 0,
+        izin: s.izin || 0,
+        dispen: s.dispen || 0,
+        alpha: s.alpha || 0,
+        percentage: 0
+      }
+    } else {
+      // Fallback: hitung manual dari items
+      const items = Array.isArray(root.data)
+        ? root.data
+        : Array.isArray(root.data?.data) ? root.data.data : []
+
+      const stats = { hadir: 0, sakit: 0, izin: 0, dispen: 0, alpha: 0 }
+      items.forEach(item => {
+        const k = normalizeStatus(item.status)
+        if (stats[k] !== undefined) stats[k]++
+      })
+      attendanceStats.value = { ...stats, percentage: 0 }
+    }
+
+    // Persentase = hadir / total
+    const t = totalHari.value
+    attendanceStats.value.percentage = t > 0
+      ? Math.round((attendanceStats.value.hadir / t) * 100)
+      : 0
+
+    console.log('✅ Attendance stats:', attendanceStats.value)
+  } catch (error) {
+    console.error('❌ Error fetching attendance stats:', error)
+  }
+}
 
 // greeting based on time of day
 
@@ -557,6 +811,7 @@ onMounted(() => {
   document.addEventListener('click', clickOutsideHandler)
 
   fetchRequests()
+  fetchAttendanceStats()
 })
 
 onUnmounted(() => {

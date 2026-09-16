@@ -60,110 +60,39 @@
         <div class="hero-emoji">📊</div>
       </section>
 
-      <!-- Quick Stats -->
+      <!-- Quick Stats — klik untuk kelola -->
       <section class="stats-grid col-12">
-        <div class="stat-card bg-blue">
+        <div class="stat-card bg-blue stat-clickable" @click="navigateTo('/admin/siswa')">
           <div class="stat-icon">
             <Users class="icon-lg" />
           </div>
           <div class="stat-content">
-            <p class="stat-value">{{ stats.totalStudents }}</p>
+            <p class="stat-value">{{ stats.total_siswa }}</p>
             <p class="stat-label">Total Siswa</p>
           </div>
+          <ChevronRight class="stat-arrow" />
         </div>
 
-        <div class="stat-card bg-green">
+        <div class="stat-card bg-green stat-clickable" @click="navigateTo('/admin/guru')">
           <div class="stat-icon">
             <GraduationCap class="icon-lg" />
           </div>
           <div class="stat-content">
-            <p class="stat-value">{{ stats.totalTeachers }}</p>
+            <p class="stat-value">{{ stats.total_guru }}</p>
             <p class="stat-label">Total Guru</p>
           </div>
+          <ChevronRight class="stat-arrow" />
         </div>
 
-        <div class="stat-card bg-yellow">
+        <div class="stat-card bg-yellow stat-clickable" @click="navigateTo('/admin/ortu')">
           <div class="stat-icon">
-            <School class="icon-lg" />
+            <HeartHandshake class="icon-lg" />
           </div>
           <div class="stat-content">
-            <p class="stat-value">{{ stats.totalClasses }}</p>
-            <p class="stat-label">Total Kelas</p>
+            <p class="stat-value">{{ stats.total_ortu }}</p>
+            <p class="stat-label">Total Orang Tua</p>
           </div>
-        </div>
-
-        <div class="stat-card bg-red">
-          <div class="stat-icon">
-            <Clock class="icon-lg" />
-          </div>
-          <div class="stat-content">
-            <p class="stat-value">{{ pendingCount }}</p>
-            <p class="stat-label">Pengajuan Pending</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Ringkasan Kelas -->
-      <section class="card col-8">
-        <h2 class="card-title">Kelas & Kehadiran Hari Ini</h2>
-
-        <div class="class-list">
-          <div
-            v-for="classItem in classes"
-            :key="classItem.id"
-            class="class-item"
-            @click="navigateTo(`/admin/kelas/${classItem.id}`)"
-          >
-            <div class="class-header">
-              <div class="class-info">
-                <h3 class="class-name">{{ classItem.name }}</h3>
-                <p class="class-subject">Wali: {{ classItem.homeroom }}</p>
-              </div>
-              <div class="class-count">
-                <Users class="icon-sm text-blue" />
-                <span>{{ classItem.studentCount }} siswa</span>
-              </div>
-            </div>
-
-            <div class="class-stats">
-              <div class="stat-item">
-                <span class="stat-label">Hadir</span>
-                <span class="stat-value text-green">{{ classItem.present }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Izin</span>
-                <span class="stat-value text-blue">{{ classItem.permission }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Sakit</span>
-                <span class="stat-value text-yellow">{{ classItem.sick }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Dispen</span>
-                <span class="stat-value text-cyan">{{ classItem.dispen }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Alpha</span>
-                <span class="stat-value text-red">{{ classItem.absent }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Aktivitas Terbaru -->
-      <section class="card col-4">
-        <h2 class="card-title">Aktivitas Terbaru</h2>
-
-        <div class="activity-list">
-          <div v-for="activity in activities" :key="activity.id" class="activity-item">
-            <span class="activity-dot" :class="`ac-${activity.color}`"></span>
-            <div class="activity-content">
-              <p class="activity-title">{{ activity.title }}</p>
-              <p class="activity-desc">{{ activity.desc }}</p>
-              <p class="activity-time">{{ activity.time }}</p>
-            </div>
-          </div>
+          <ChevronRight class="stat-arrow" />
         </div>
       </section>
 
@@ -260,7 +189,7 @@ import { useAuthStore } from '../../stores/authStore'
 import apiClient from '../../utils/api'
 import {
   Wifi, User, ChevronDown, Settings, LogOut,
-  Users, GraduationCap, School, Clock,
+  Users, GraduationCap, HeartHandshake, ChevronRight,
   FileText, Calendar, X, CheckCircle, AlertTriangle
 } from 'lucide-vue-next'
 
@@ -284,31 +213,82 @@ const admin = ref({
   username: authStore.user?.username || 'admin'
 })
 
-// TODO: ganti dengan endpoint statistik admin, mis. /admin/stats
+// ===== Statistik user (live dari /users/stats) =====
 const stats = ref({
-  totalStudents: 150,
-  totalTeachers: 12,
-  totalClasses: 6
+  total_siswa: 0,
+  total_guru: 0,
+  total_ortu: 0
 })
 
-// TODO: ganti dengan endpoint kelas, mis. /admin/classes
-const classes = ref([
-  { id: 1, name: 'X RPL 1',   homeroom: 'Pak Budi',  studentCount: 30, present: 28, permission: 1, sick: 1, dispen: 0, absent: 0 },
-  { id: 2, name: 'X RPL 2',   homeroom: 'Bu Sari',   studentCount: 30, present: 27, permission: 0, sick: 2, dispen: 1, absent: 0 },
-  { id: 3, name: 'XI RPL 1',  homeroom: 'Pak Andi',  studentCount: 30, present: 29, permission: 1, sick: 0, dispen: 0, absent: 0 },
-  { id: 4, name: 'XI RPL 2',  homeroom: 'Bu Rina',   studentCount: 30, present: 26, permission: 2, sick: 1, dispen: 1, absent: 0 },
-  { id: 5, name: 'XII RPL 1', homeroom: 'Pak Dedi',  studentCount: 30, present: 28, permission: 0, sick: 2, dispen: 0, absent: 0 },
-  { id: 6, name: 'XII RPL 2', homeroom: 'Bu Wati',   studentCount: 30, present: 29, permission: 1, sick: 0, dispen: 0, absent: 0 }
-])
+const normalizeRole = (r) => {
+  const v = String(r || '').toLowerCase().trim()
+  if (['siswa', 'student'].includes(v)) return 'siswa'
+  if (['guru', 'teacher'].includes(v)) return 'guru'
+  if (['ortu', 'parent', 'orang_tua', 'wali'].includes(v)) return 'ortu'
+  return v
+}
 
-// TODO: ganti dengan endpoint aktivitas, mis. /admin/activities
-const activities = ref([
-  { id: 1, title: 'Pengajuan baru',      desc: 'Siswa Test mengajukan izin',       time: '10 menit lalu', color: 'blue' },
-  { id: 2, title: 'Pengajuan disetujui', desc: 'Ortu menyetujui izin Budi',        time: '1 jam lalu',    color: 'green' },
-  { id: 3, title: 'Presensi masuk',      desc: 'XII RPL 1 selesai absen pagi',     time: '2 jam lalu',    color: 'green' },
-  { id: 4, title: 'Pengajuan ditolak',   desc: 'Guru menolak sakit Ani',           time: '3 jam lalu',    color: 'red' },
-  { id: 5, title: 'Akun baru',           desc: 'Guru baru ditambahkan',            time: 'Kemarin',       color: 'amber' }
-])
+const fetchStats = async () => {
+  try {
+    console.log('📡 Fetching user stats...')
+    const res = await apiClient.get('/users/stats')
+    console.log('✅ User stats received:', res.data)
+
+    const root = res.data || {}
+    const d = root.data ?? root   // handle yang dibungkus "data" atau nggak
+
+        // Bentuk 1: objek — { total_siswa, total_guru, total_ortu }
+    if (d && !Array.isArray(d)) {
+      stats.value = {
+        total_siswa: d.total_siswa ?? d.siswa ?? d.students ?? 0,
+        total_guru: d.total_guru ?? d.guru ?? d.teachers ?? 0,
+        total_ortu: d.total_ortu ?? d.ortu ?? d.parents ?? d.wali ?? 0
+      }
+      return
+    }
+
+    // Bentuk 2: array — [{ role: 'siswa', total: 10 }, ...]
+    if (Array.isArray(d)) {
+      const pick = (roleKey) => {
+        const row = d.find(x => normalizeRole(x.role || x.name) === roleKey)
+        return row ? Number(row.total ?? row.count ?? row.jumlah ?? 0) : 0
+      }
+      stats.value = {
+        total_siswa: pick('siswa'),
+        total_guru: pick('guru'),
+        total_ortu: pick('ortu')
+      }
+      return
+    }
+
+    throw new Error('Format stats tidak dikenali')
+
+  } catch (error) {
+    console.error('❌ Error fetching user stats:', error)
+    // Fallback: hitung manual dari /users kalau stats gagal
+    try {
+      const res = await apiClient.get('/users', { params: { per_page: 1000 } })
+      const root = res.data || {}
+      const items = Array.isArray(root.data)
+        ? root.data
+        : Array.isArray(root.data?.data) ? root.data.data : []
+
+      const count = { siswa: 0, guru: 0, ortu: 0 }
+      items.forEach(u => {
+        const r = normalizeRole(u.role)
+        if (count[r] !== undefined) count[r]++
+      })
+
+      stats.value = {
+        total_siswa: count.siswa,
+        total_guru: count.guru,
+        total_ortu: count.ortu
+      }
+    } catch (e2) {
+      console.error('❌ Fallback stats juga gagal:', e2)
+    }
+  }
+}
 
 // ===== Helpers =====
 
@@ -461,6 +441,7 @@ onMounted(() => {
   document.addEventListener('click', clickOutsideHandler)
 
   fetchRequests()
+  fetchStats()
 })
 
 onUnmounted(() => {

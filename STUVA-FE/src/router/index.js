@@ -10,6 +10,7 @@ import ProfileGuru from '../views/guru/ProfileGuru.vue'
 import DashboardOrtu from '../views/ortu/DashboardOrtu.vue'
 import ProfileOrtu from '../views/ortu/ProfileOrtu.vue'
 import DashboardAdmin from '../views/admin/DashboardAdmin.vue'
+import ManageUsers from '../views/admin/ManageUsers.vue'
 
 
 
@@ -76,7 +77,28 @@ const routes = [
     name: 'ProfileAdmin',
     component: () => import('../views/admin/ProfileAdmin.vue'),
     meta: { requiresAuth: true, role: 'admin' }
-  }
+  },
+    {
+    path: '/admin/siswa',
+    name: 'AdminSiswa',
+    component: ManageUsers,
+    props: { role: 'siswa', title: 'Kelola Siswa' },
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/guru',
+    name: 'AdminGuru',
+    component: ManageUsers,
+    props: { role: 'guru', title: 'Kelola Guru' },
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/ortu',
+    name: 'AdminOrtu',
+    component: ManageUsers,
+    props: { role: 'ortu', title: 'Kelola Orang Tua' },
+    meta: { requiresAuth: true, role: 'admin' }
+  },
 ]
 
 const router = createRouter({
