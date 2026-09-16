@@ -31,19 +31,23 @@ class UserController extends Controller
     }
 
     // Ambil semua data user (bisa dengan filter role)
+    // 1. Ambil List User (Bisa Filter Role + Pagination 10)
     public function index(Request $request)
     {
         try {
-            // Eager loading relasi student biar tau ortu ini connect ke siswa siapa
+            // Eager loading relasi student
             $query = User::with('student:id,name,class_name');
-
-            // Filter berdasarkan role jika diberikan (misal: ?role=ortu)
-            if ($request->has('role')) {
+    
+            // Filter berdasarkan role jika dikirim dari FE (misal: ?role=siswa, ?role=guru, ?role=ortu)
+            if ($request->has('role') && !empty($request->role)) {
                 $query->where('role', $request->role);
             }
-
-            $users = $query->latest()->get();
-
+    
+            // Ambil data dengan pagination 10 item per halaman
+            // per_page bisa diset dinamik kalau FE minta, default 10
+            $perPage = $request->get('per_page', 10);
+            $users = $query->latest()->paginate($perPage);
+    
             return response()->json([
                 'status' => 'success',
                 'data'   => $users
@@ -55,7 +59,30 @@ class UserController extends Controller
             ], 500);
         }
     }
-
+    
+    // 2. Endpoint Khusus Card Dashboard (Total Siswa, Guru, Ortu)
+    public function getStats()
+    {
+        try {
+            $totalSiswa = User::where('role', 'siswa')->count();
+            $totalGuru  = User::where('role', 'guru')->count();
+            $totalOrtu  = User::where('role', 'ortu')->count();
+    
+            return response()->json([
+                'status' => 'success',
+                'data'   => [
+                    'total_siswa' => $totalSiswa,
+                    'total_guru'  => $totalGuru,
+                    'total_ortu'  => $totalOrtu,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Gagal mengambil statistik user: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     // Tambah User Baru (Siswa / Ortu / Guru)
     public function store(Request $request)
     {

@@ -15,7 +15,7 @@ class LocationController extends Controller
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'battery_level' => 'nullable|integer|between:0,100',
+            'battery_level' => 'nullable|integer|min:0|max:100',
         ]);
 
         $log = LocationLog::create([
