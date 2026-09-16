@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -58,7 +59,6 @@ class UserController extends Controller
     // Tambah User Baru (Siswa / Ortu / Guru)
     public function store(Request $request)
     {
-
         if ($request->user()->role !== 'admin') {
             return response()->json([
                 'status'  => 'error',
@@ -66,26 +66,42 @@ class UserController extends Controller
             ], 403);
         }
 
-        // Validasi ditaruh DILUAR try-catch biar otomatis balikin 422 kalau input invalid
         $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'username'   => 'required|string|max:255|unique:users',
-            'email'      => 'required|string|email|max:255|unique:users',
-            'password'   => 'required|string|min:8',
-            'role'       => 'required|in:siswa,ortu,guru',
-            'class_name' => 'required_if:role,siswa|nullable|string|max:255',
-            'student_id' => 'required_if:role,ortu|nullable|exists:users,id',
+            'name'         => 'required|string|max:255',
+            'username'     => 'required|string|max:255|unique:users',
+            'email'        => 'required|string|email|max:255|unique:users',
+            'password'     => 'required|string|min:8',
+            'role'         => 'required|in:siswa,ortu,guru',
+            'class_name'   => 'required_if:role,siswa|nullable|string|max:255',
+            'student_id'   => 'required_if:role,ortu|nullable|exists:users,id',
+            // Field profil baru
+            'nisn'         => 'required_if:role,siswa|nullable|string|max:20|unique:users,nisn',
+            'nip'          => 'required_if:role,guru|nullable|string|max:30|unique:users,nip',
+            'subject'      => 'required_if:role,guru|nullable|string|max:255',
+            'gender'       => 'nullable|in:Laki-laki,Perempuan',
+            'birth_place'  => 'nullable|string|max:255',
+            'birth_date'   => 'nullable|date',
+            'address'      => 'nullable|string',
+            'phone_number' => 'nullable|string|max:20',
         ]);
 
         try {
             $user = User::create([
-                'name'       => $validated['name'],
-                'username'   => $validated['username'],
-                'email'      => $validated['email'],
-                'password'   => Hash::make($validated['password']),
-                'role'       => $validated['role'],
-                'class_name' => $request->role === 'siswa' ? $validated['class_name'] : null,
-                'student_id' => $request->role === 'ortu' ? $validated['student_id'] : null,
+                'name'         => $validated['name'],
+                'username'     => $validated['username'],
+                'email'        => $validated['email'],
+                'password'     => Hash::make($validated['password']),
+                'role'         => $validated['role'],
+                'class_name'   => $request->role === 'siswa' ? $validated['class_name'] : null,
+                'student_id'   => $request->role === 'ortu' ? $validated['student_id'] : null,
+                'nisn'         => $request->role === 'siswa' ? ($validated['nisn'] ?? null) : null,
+                'nip'          => $request->role === 'guru' ? ($validated['nip'] ?? null) : null,
+                'subject'      => $request->role === 'guru' ? ($validated['subject'] ?? null) : null,
+                'gender'       => $validated['gender'] ?? null,
+                'birth_place'  => $validated['birth_place'] ?? null,
+                'birth_date'   => $validated['birth_date'] ?? null,
+                'address'      => $validated['address'] ?? null,
+                'phone_number' => $validated['phone_number'] ?? null,
             ]);
 
             return response()->json([
@@ -125,26 +141,42 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'username'   => 'required|string|max:255|unique:users,username,' . $id,
-            'email'      => 'required|string|email|max:255|unique:users,email,' . $id,
-            'password'   => 'nullable|string|min:8', // Opsional, diisi kalau mau ganti password
-            'role'       => 'required|in:siswa,ortu,guru,admin',
-            'class_name' => 'required_if:role,siswa|nullable|string|max:255',
-            'student_id' => 'required_if:role,ortu|nullable|exists:users,id',
+            'name'         => 'required|string|max:255',
+            'username'     => 'required|string|max:255|unique:users,username,' . $id,
+            'email'        => 'required|string|email|max:255|unique:users,email,' . $id,
+            'password'     => 'nullable|string|min:8',
+            'role'         => 'required|in:siswa,ortu,guru,admin',
+            'class_name'   => 'required_if:role,siswa|nullable|string|max:255',
+            'student_id'   => 'required_if:role,ortu|nullable|exists:users,id',
+            // Field profil baru
+            'nisn'         => 'required_if:role,siswa|nullable|string|max:20|unique:users,nisn,' . $id,
+            'gender'       => 'nullable|in:Laki-laki,Perempuan',
+            'birth_place'  => 'nullable|string|max:255',
+            'birth_date'   => 'nullable|date',
+            'address'      => 'nullable|string',
+            'phone_number' => 'nullable|string|max:20',
+            'nip'          => 'required_if:role,guru|nullable|string|max:30|unique:users,nip,' . $id,
+            'subject'      => 'required_if:role,guru|nullable|string|max:255',
         ]);
 
         try {
             $dataToUpdate = [
-                'name'       => $validated['name'],
-                'username'   => $validated['username'],
-                'email'      => $validated['email'],
-                'role'       => $validated['role'],
-                'class_name' => $request->role === 'siswa' ? $validated['class_name'] : null,
-                'student_id' => $request->role === 'ortu' ? $validated['student_id'] : null,
+                'name'         => $validated['name'],
+                'username'     => $validated['username'],
+                'email'        => $validated['email'],
+                'role'         => $validated['role'],
+                'class_name'   => $request->role === 'siswa' ? $validated['class_name'] : null,
+                'student_id'   => $request->role === 'ortu' ? $validated['student_id'] : null,
+                'nisn'         => $request->role === 'siswa' ? ($validated['nisn'] ?? null) : null,
+                'gender'       => $validated['gender'] ?? null,
+                'birth_place'  => $validated['birth_place'] ?? null,
+                'birth_date'   => $validated['birth_date'] ?? null,
+                'address'      => $validated['address'] ?? null,
+                'phone_number' => $validated['phone_number'] ?? null,
+                'nip'          => $request->role === 'guru' ? ($validated['nip'] ?? null) : null,
+                'subject'      => $request->role === 'guru' ? ($validated['subject'] ?? null) : null,
             ];
 
-            // Update password hanya jika diisi oleh Admin
             if ($request->filled('password')) {
                 $dataToUpdate['password'] = Hash::make($validated['password']);
             }
@@ -162,6 +194,61 @@ class UserController extends Controller
                 'message' => 'Gagal memperbarui data user: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    // 1. Update Profil Sendiri
+    public function updateProfile(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name'         => 'required|string|max:255',
+            'email'        => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'gender'       => 'nullable|in:Laki-laki,Perempuan',
+            'birth_place'  => 'nullable|string|max:255',
+            'birth_date'   => 'nullable|date',
+            'address'      => 'nullable|string',
+            'phone_number' => 'nullable|string|max:20',
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Profil berhasil diperbarui',
+            'data'    => $user
+        ]);
+    }
+
+    // 2. Ganti Password Sendiri
+    public function changePassword(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password'     => ['required', 'string', 'min:8', 'confirmed'], // butuh new_password_confirmation dari FE
+        ]);
+
+        // Cek apakah password lama sesuai
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Password saat ini tidak sesuai'
+            ], 422);
+        }
+
+        // Update ke password baru
+        $user->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Password berhasil diubah'
+        ]);
     }
 
     // Hapus User
