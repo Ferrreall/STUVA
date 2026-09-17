@@ -256,29 +256,28 @@
 }
 
 /* ===== layout 2 kolom ===== */
+/* ===== grid kartu: flat & beraturan ===== */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  align-items: start;         /* kolom kiri & kanan tinggi bebas */
 }
 
-.cards-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;               /* biar isi panjang (alamat dll) nggak overflow */
+/* kartu terakhir yang jadi ganjil → melebar penuh biar nggak ada lubang */
+.cards-grid > .card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
-/* wrapper nggak ikut animasi, biar kartu yang animasi satuan */
 .main-content > .cards-grid { animation: none; }
 
-.cards-col > .card {
+.cards-grid > .card {
+  display: flex;
+  flex-direction: column;
   animation: rise-in .5s var(--ease-out) both;
 }
-.cards-col > .card:nth-child(1) { animation-delay: .12s; }
-.cards-col > .card:nth-child(2) { animation-delay: .18s; }
-.cards-col > .card:nth-child(3) { animation-delay: .24s; }
+.cards-grid > .card:nth-child(1) { animation-delay: .12s; }
+.cards-grid > .card:nth-child(2) { animation-delay: .18s; }
+.cards-grid > .card:nth-child(3) { animation-delay: .24s; }
 
 @media (max-width: 1023px) {
   .cards-grid { grid-template-columns: 1fr; }

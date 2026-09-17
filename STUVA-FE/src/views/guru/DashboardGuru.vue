@@ -144,6 +144,19 @@
             </div>
           </div>
         </div>
+                <div v-if="loadingDashboard" class="loading-state">
+          <div class="spinner"></div>
+          <p class="loading-text">Memuat kelas...</p>
+        </div>
+
+        <div v-else-if="classes.length === 0" class="empty-state">
+          <Users class="icon-lg" />
+          <p class="empty-text">Belum ada kelas yang diajar. Hubungi admin untuk pengaturan kelas.</p>
+        </div>
+
+        <div v-else class="class-list">
+          <!-- ... v-for classItem yang udah ada, TIDAK DIUBAH ... -->
+        </div>
       </section>
 
       <!-- Jadwal Mengajar Hari Ini -->
@@ -173,6 +186,14 @@
             </button>
           </div>
         </div>
+                <div v-if="todaySchedule.length === 0" class="empty-state">
+          <Calendar class="icon-lg" />
+          <p class="empty-text">Belum ada jadwal mengajar hari ini</p>
+        </div>
+
+        <div v-else class="schedule-list">
+          <!-- ... v-for schedule yang udah ada ... -->
+        </div>
       </section>
 
       <!-- Pengajuan Izin/Sakit Terbaru -->
@@ -182,10 +203,6 @@
             <h2 class="card-title">Menunggu Verifikasi</h2>
             <span v-if="pendingRequests.length" class="count-chip">{{ pendingRequests.length }}</span>
           </div>
-          <button @click="navigateTo('/guru/pengajuan')" class="btn-see-all">
-            Lihat Semua
-            <ChevronRight class="icon-xs" />
-          </button>
         </div>
 
         <div v-if="loadingRequests" class="loading-state">
@@ -341,11 +358,12 @@ const selectedImage = ref(null)
 // ===== Data =====
 const loadingRequests = ref(true)
 const allRequests = ref([])
+const loadingDashboard = ref(true)
 
 const teacher = ref({
   name: authStore.user?.name || 'Guru Test',
   nip: authStore.user?.username || '-',
-  subject: 'Matematika'
+  subject: authStore.user?.subject || '-'
 })
 
 // greeting & date
@@ -361,16 +379,20 @@ const todayLabel = new Date().toLocaleDateString('id-ID', {
   weekday: 'long', day: 'numeric', month: 'long'
 })
 
-// TODO: nanti dari API attendance khusus guru
+// ===== Stats & Kelas (LIVE dari /guru/dashboard) =====
 const stats = ref({
-  totalStudents: 150,
-  presentToday: 142,
-  absentToday: 8
+  totalStudents: 0,
+  presentToday: 0,
+  absentToday: 0
 })
+
+const classes = ref([])
+
+// Jadwal: belum ada tabel jadwal di backend → kosong dulu + empty state
+const todaySchedule = ref([])
 
 // ===== Helpers =====
 
-// 📌 fix foto bukti broken
 const buildPhotoUrl = (path) => {
   if (!path) return null
   if (path.startsWith('http')) return path
@@ -412,7 +434,62 @@ const displayToast = (message, type = 'success') => {
   setTimeout(() => { showToast.value = false }, 3000)
 }
 
-// ===== Fetch =====
+// ===== Fetch dashboard (stats + kelas) =====
+const fetchDashboard = async () => {
+  loadingDashboard.value = true
+  try {
+    console.log('📡 Fetching guru dashboard...')
+    const res = await apiClient.get('/guru/dashboard')
+    console.log('✅ Guru dashboard received:', res.data)
+
+    const root = res.data?.data || {}
+    const cards = root.cards || {}
+
+    // 4 stat card atas — sesuai format backend kamu
+    stats.value = {
+      totalStudents: cards.total_siswa ?? 0,
+      presentToday: cards.total_siswa_masuk ?? 0,
+      absentToday: cards.total_siswa_tidak_masuk ?? 0
+    }
+
+    // Kartu "Kelas yang Diajar"
+    // backend kamu: classes_data ada DI DALAM cards
+    const classesData = root.classes || cards.classes_data || []
+
+    if (Array.isArray(classesData) && classesData.length > 0) {
+      classes.value = classesData.map(c => ({
+        id: c.id,
+        name: c.name,
+        subject: teacher.value.subject,
+        studentCount: c.student_count ?? 0,
+        present: c.hadir ?? 0,
+        permission: c.izin ?? 0,
+        sick: c.sakit ?? 0,
+        absent: c.alpha ?? 0
+      }))
+    } else {
+      // fallback terakhir: cuma nama kelas
+      const names = Array.isArray(cards.class_name) ? cards.class_name : []
+      classes.value = names.map(name => ({
+        id: name,
+        name,
+        subject: teacher.value.subject,
+        studentCount: 0,
+        present: 0,
+        permission: 0,
+        sick: 0,
+        absent: 0
+      }))
+    }
+
+  } catch (error) {
+    console.error('❌ Error fetching guru dashboard:', error)
+  } finally {
+    loadingDashboard.value = false
+  }
+}
+
+// ===== Fetch pengajuan =====
 const fetchRequests = async () => {
   loadingRequests.value = true
   try {
@@ -542,6 +619,7 @@ onMounted(() => {
   document.addEventListener('click', clickOutsideHandler)
 
   fetchRequests()
+  fetchDashboard()
 })
 
 onUnmounted(() => {
@@ -551,4 +629,6 @@ onUnmounted(() => {
 })
 </script>
 
-<style src="../../assets/css/DashboardGuru.css"></style>
+<style scoped>
+@import "../../assets/css/DashboardGuru.css";
+</style>

@@ -75,19 +75,11 @@
                 <Phone class="icon-xs" />
                 {{ u.phone_number || '-' }}
               </p>
-              <p v-if="u.class_name" class="detail-line">
+              <p v-if="formatClasses(u.class_name)" class="detail-line">
                 <School class="icon-xs" />
-                {{ u.class_name }}
+                {{ formatClasses(u.class_name) }}
               </p>
             </div>
-
-            <span
-              class="user-status"
-              :class="u.is_active !== false ? 'st-active' : 'st-inactive'"
-            >
-              <span class="status-dot"></span>
-              {{ u.is_active !== false ? 'Aktif' : 'Nonaktif' }}
-            </span>
 
             <div class="user-actions">
               <button @click="openEdit(u)" class="btn-icon-action edit" title="Edit">
@@ -115,11 +107,11 @@
             </button>
           </div>
 
-                    <form @submit.prevent="submitForm" class="modal-body">
+            <form @submit.prevent="submitForm" class="modal-body">
             <div v-for="field in formFields" :key="field.key" class="form-group">
               <label class="form-label">{{ field.label }}</label>
 
-              <!-- dropdown (untuk pilih anak di form Ortu) -->
+              <!-- dropdown (pilih 1: kelas siswa, anak ortu) -->
               <select
                 v-if="field.type === 'select'"
                 v-model="formData[field.key]"
@@ -132,6 +124,25 @@
                 </option>
               </select>
 
+              <!-- ★ LANGKAH C: checkbox multi-pilih (kelas yang diajar guru) ★ -->
+              <div
+                v-else-if="field.type === 'multiselect'"
+                class="checkbox-grid"
+              >
+                <label
+                  v-for="opt in field.options"
+                  :key="opt.value"
+                  class="checkbox-item"
+                >
+                  <input
+                    type="checkbox"
+                    :value="opt.value"
+                    v-model="formData[field.key]"
+                  />
+                  <span>{{ opt.label }}</span>
+                </label>
+              </div>
+
               <!-- input biasa -->
               <input
                 v-else
@@ -142,20 +153,6 @@
                 :minlength="field.type === 'password' ? 8 : undefined"
                 :placeholder="field.placeholder"
               />
-            </div>
-
-            <!-- Toggle aktif (hanya saat edit) -->
-            <div v-if="isEditing" class="form-group toggle-group">
-              <label class="form-label">Status Akun</label>
-              <button
-                type="button"
-                @click="formData.is_active = !formData.is_active"
-                class="toggle-switch"
-                :class="{ on: formData.is_active }"
-              >
-                <span class="toggle-knob"></span>
-              </button>
-              <span class="toggle-label">{{ formData.is_active ? 'Aktif' : 'Nonaktif' }}</span>
             </div>
 
             <div class="modal-footer">
@@ -229,12 +226,10 @@ const roleLabel = computed(() =>
   ({ siswa: 'Siswa', guru: 'Guru', ortu: 'Orang Tua' }[props.role] || props.role)
 )
 
-// Nama field ke backend: siswa → nisn, guru → nip, ortu → username
 const usernameField = computed(() =>
   ({ siswa: 'nisn', guru: 'nip', ortu: 'username' }[props.role] || 'username')
 )
 
-// Label di layar
 const usernameLabel = computed(() =>
   ({ siswa: 'NISN', guru: 'NIP', ortu: 'Username' }[props.role] || 'Username')
 )
@@ -259,7 +254,7 @@ const showToast = ref(false)
 const toastMessage = ref('')
 const toastType = ref('success')
 
-// ===== Daftar siswa (dropdown di form Ortu) =====
+// ===== Dropdown: daftar siswa (form ortu) =====
 const studentOptions = ref([])
 
 const fetchStudentOptions = async () => {
@@ -280,6 +275,37 @@ const fetchStudentOptions = async () => {
   }
 }
 
+// ===== Dropdown: daftar kelas (form siswa & guru) =====
+const classOptions = ref([])
+
+const fetchClassOptions = async () => {
+  if (props.role !== 'siswa' && props.role !== 'guru') return
+  try {
+    const res = await apiClient.get('/available-classes')
+    const items = res.data?.data || []
+    classOptions.value = items.map(c => ({
+      value: c.class_name,   // murni "XII RPL 1" → dikirim ke backend
+      label: c.label         // "XII RPL 1 -- Pak Candra" → tampil di UI
+    }))
+  } catch (error) {
+    console.error('❌ Gagal ambil daftar kelas:', error)
+    classOptions.value = []
+  }
+}
+
+// helper: tampilkan class_name (string / JSON array) rapi di list
+const formatClasses = (cn) => {
+  if (!cn) return ''
+  let arr = cn
+  if (typeof cn === 'string') {
+    try {
+      const parsed = JSON.parse(cn)
+      if (Array.isArray(parsed)) arr = parsed
+    } catch { arr = [cn] }
+  }
+  return Array.isArray(arr) ? arr.join(', ') : String(arr)
+}
+
 // ===== Form fields dinamis per role =====
 const formFields = computed(() => {
   const fields = [
@@ -292,14 +318,27 @@ const formFields = computed(() => {
     fields.push({ key: 'username', label: 'Username', type: 'text', required: true })
   }
 
-  fields.push({ key: 'email', label: 'Email', type: 'email', required: true })      // backend required!
-  fields.push({ key: 'phone_number', label: 'No. HP', type: 'tel' })                // sesuai kolom BE
+  fields.push({ key: 'email', label: 'Email', type: 'email', required: true })
+  fields.push({ key: 'phone_number', label: 'No. HP', type: 'tel' })
 
   if (props.role === 'siswa') {
-    fields.push({ key: 'class_name', label: 'Kelas', type: 'text', required: true, placeholder: 'cth: XII RPL 1' })
+    fields.push({
+      key: 'class_name',
+      label: 'Kelas',
+      type: 'select',              // ★ dropdown pilih 1 kelas
+      required: true,
+      options: classOptions.value
+    })
   }
   if (props.role === 'guru') {
     fields.push({ key: 'subject', label: 'Mata Pelajaran', type: 'text', required: true, placeholder: 'cth: Matematika' })
+    fields.push({
+      key: 'class_name',
+      label: 'Kelas yang Diajar',
+      type: 'multiselect',         // ★ checkbox, bisa banyak kelas
+      required: true,
+      options: classOptions.value
+    })
   }
   if (props.role === 'ortu') {
     fields.push({
@@ -311,7 +350,7 @@ const formFields = computed(() => {
     })
   }
   if (!isEditing.value) {
-    fields.push({ key: 'password', label: 'Password', type: 'password', required: true })  // min 8!
+    fields.push({ key: 'password', label: 'Password', type: 'password', required: true })
   }
   return fields
 })
@@ -401,7 +440,7 @@ const openCreate = () => {
     [usernameField.value]: '',
     email: '',
     phone_number: '',
-    class_name: '',
+    class_name: props.role === 'guru' ? [] : '',   // ★ guru: array, siswa: string
     subject: '',
     student_id: '',
     password: ''
@@ -413,15 +452,28 @@ const openCreate = () => {
 const openEdit = (u) => {
   isEditing.value = true
   editingId.value = u.id
+
+  // class_name guru tersimpan sebagai JSON string → parse jadi array utk checkbox
+  let classes = u.class_name || ''
+  if (props.role === 'guru') {
+    if (typeof classes === 'string') {
+      try {
+        const parsed = JSON.parse(classes)
+        classes = Array.isArray(parsed) ? parsed : [classes]
+      } catch { classes = classes ? [classes] : [] }
+    } else if (!Array.isArray(classes)) {
+      classes = classes ? [classes] : []
+    }
+  }
+
   formData.value = {
     name: u.name || '',
     [usernameField.value]: u[usernameField.value] || u.username || '',
     email: u.email || '',
     phone_number: u.phone_number || u.phone || '',
-    class_name: u.class_name || '',
+    class_name: classes,
     subject: u.subject || '',
-    student_id: u.student_id || '',
-    is_active: u.is_active !== false
+    student_id: u.student_id || ''
   }
   showFormModal.value = true
 }
@@ -437,12 +489,13 @@ const submitForm = async () => {
   try {
     const payload = { ...formData.value, role: props.role }
 
-    // ★★★ INI YANG MEMPERBAIKI ERROR "username field is required" ★★★
-    // username otomatis = NISN (siswa) / NIP (guru)
     if (props.role === 'siswa') payload.username = payload.nisn
-    if (props.role === 'guru') payload.username = payload.nip
+    if (props.role === 'guru') {
+      payload.username = payload.nip
+      // ★ kirim sebagai JSON string — format yang dibaca getAvailableClasses
+      payload.class_name = JSON.stringify(payload.class_name || [])
+    }
 
-    // password kosong saat edit → jangan kirim
     if (isEditing.value && !payload.password) {
       delete payload.password
     }
@@ -495,6 +548,7 @@ onMounted(() => {
   fetchUsers()
   fetchStats()
   fetchStudentOptions()
+  fetchClassOptions()
 })
 </script>
 

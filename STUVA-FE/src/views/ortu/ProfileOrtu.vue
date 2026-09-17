@@ -205,18 +205,6 @@
                 </div>
                 <span class="info-value">{{ formatDate(profile.created_at) || '-' }}</span>
               </div>
-
-              <div class="info-item">
-                <div class="info-label">
-                  <Shield class="icon-sm text-cyan" />
-                  <span>Status Akun</span>
-                </div>
-                <span class="info-value">
-                  <span :class="profile.is_active ? 'badge badge-success' : 'badge badge-danger'">
-                    {{ profile.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                  </span>
-                </span>
-              </div>
             </div>
           </section>
       </div>
