@@ -44,7 +44,6 @@
       <!-- Dua Kolom Kartu -->
       <div class="cards-grid">
         <!-- Kolom Kiri: Kartu Tinggi -->
-        <div class="cards-col">
           <!-- Personal Info Card -->
           <section class="card">
             <div class="card-header">
@@ -146,10 +145,8 @@
               </div>
             </form>
           </section>
-        </div>
 
         <!-- Kolom Kanan: Tumpukan Kartu Pendek -->
-        <div class="cards-col">
           <!-- Contact Info Card -->
           <section class="card">
             <h3 class="card-title">Kontak</h3>
@@ -193,21 +190,8 @@
                 </div>
                 <span class="info-value">{{ formatDate(profile.created_at) || '-' }}</span>
               </div>
-
-              <div class="info-item">
-                <div class="info-label">
-                  <Shield class="icon-sm text-amber" />
-                  <span>Status Akun</span>
-                </div>
-                <span class="info-value">
-                  <span :class="profile.is_active ? 'badge badge-success' : 'badge badge-danger'">
-                    {{ profile.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                  </span>
-                </span>
-              </div>
             </div>
           </section>
-        </div>
       </div>
 
       <!-- Change Password Section -->

@@ -747,3 +747,30 @@
   justify-content: center;
   font-variant-numeric: tabular-nums;
 }
+
+/* ===== checkbox multi-pilih (kelas guru) ===== */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .813rem;
+  color: var(--gray-700);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background .15s ease;
+}
+.checkbox-item:hover { background: var(--brand-50); }
+.checkbox-item input { accent-color: var(--brand-600); cursor: pointer; flex-shrink: 0; }
