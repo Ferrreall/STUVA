@@ -1467,3 +1467,51 @@
     transition-duration: .01ms !important;
   }
 }
+
+/* ===== Telemetri anak: auto-refresh + tombol refresh ===== */
+.auto-refresh-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  cursor: pointer;
+  user-select: none;
+}
+.auto-refresh-toggle input { accent-color: var(--brand-600); cursor: pointer; }
+
+.btn-refresh {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  border: 1.5px solid var(--gray-200);
+  background: #ffffff;
+  color: var(--brand-700);
+  font-weight: 700;
+  font-size: .813rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-refresh:hover:not(:disabled) {
+  border-color: var(--brand-400);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px -6px rgba(234,88,12,.3);
+}
+.btn-refresh:disabled { opacity: .5; cursor: not-allowed; }
+
+.spinning { animation: spin .8s linear infinite; }
+
+.loc-msg {
+  margin: 14px 0 0;
+  font-size: .75rem;
+  line-height: 1.5;
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+.loc-msg.error { background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; }
+.loc-msg.warn  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }

@@ -71,24 +71,6 @@
         </button>
       </form>
 
-      <div class="login-footer">
-        <p class="footer-text">Akun Demo <span class="footer-hint">— klik untuk isi otomatis</span></p>
-        <div class="demo-accounts">
-        <button @click="useDemoAccount('siswa')" class="demo-btn demo-siswa" :disabled="authStore.loading">
-          Siswa
-        </button>
-        <button @click="useDemoAccount('guru')" class="demo-btn demo-guru" :disabled="authStore.loading">
-          Guru
-        </button>
-        <button @click="useDemoAccount('ortu')" class="demo-btn demo-ortu" :disabled="authStore.loading">
-          Orang Tua
-        </button>
-        <button @click="useDemoAccount('admin')" class="demo-btn demo-admin" :disabled="authStore.loading">
-          Admin
-        </button>
-      </div>
-      </div>
-
       <!-- Debug: Force Logout Button -->
       <div v-if="hasToken" class="debug-section">
         <p class="debug-text">⚠️ Masih ada session aktif</p>
@@ -197,22 +179,6 @@ const forceLogout = async () => {
     toast.error('Gagal menghapus session')
   } finally {
     isLoggingOut.value = false
-  }
-}
-
-const useDemoAccount = (role) => {
-  if (role === 'siswa') {
-    formData.value.username = '1234567890'
-    formData.value.password = 'password123'
-  } else if (role === 'guru') {
-    formData.value.username = '198501012026011001'
-    formData.value.password = 'password123'
-  } else if (role === 'ortu') {
-    formData.value.username = '081234567890'
-    formData.value.password = 'password123'
-  } else if (role === 'admin') {
-    formData.value.username = 'admin'
-    formData.value.password = 'password123'
   }
 }
 </script>
