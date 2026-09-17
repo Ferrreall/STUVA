@@ -153,37 +153,62 @@
         <p class="summary-total">Total {{ totalHari }} hari tercatat semester ini</p>
       </section>
 
-      <!-- Telemetri Perangkat Anak -->
+            <!-- Telemetri Perangkat Anak (LIVE) -->
       <section class="card col-4">
-        <h2 class="card-title">Perangkat {{ parent.studentName }}</h2>
+        <div class="card-title-row">
+          <h2 class="card-title">Perangkat {{ parent.studentName }}</h2>
+          <label class="auto-refresh-toggle">
+            <input type="checkbox" v-model="autoRefresh" />
+            Auto
+          </label>
+        </div>
 
         <div class="telemetry-list">
+          <!-- Daya Baterai -->
           <div class="telemetry-item">
             <div class="telemetry-label">
               <BatteryCharging class="icon-sm text-blue" />
               <span>Daya Baterai</span>
             </div>
-            <span class="telemetry-value-bold">{{ mdmStatus.battery }}%</span>
+            <span class="telemetry-value-bold">
+              {{ lastLoc?.battery_level != null ? `${lastLoc.battery_level}%` : '--' }}
+            </span>
           </div>
 
+          <!-- Koordinat -->
           <div class="telemetry-item">
             <div class="telemetry-label">
               <MapPin class="icon-sm text-red" />
               <span>Lokasi Terakhir</span>
             </div>
             <span class="telemetry-value-mono">
-              {{ mdmStatus.latitude }}, {{ mdmStatus.longitude }}
+              {{ lastLoc
+                ? `${Number(lastLoc.latitude).toFixed(5)}, ${Number(lastLoc.longitude).toFixed(5)}`
+                : '--' }}
             </span>
           </div>
 
+          <!-- Update terakhir -->
           <div class="telemetry-item">
             <div class="telemetry-label">
               <Clock class="icon-sm text-gray" />
-              <span>Terakhir Diperbarui</span>
+              <span>Update Terakhir</span>
             </div>
-            <span class="telemetry-value-sub">{{ mdmStatus.lastSync }}</span>
+            <span class="telemetry-value-sub">{{ lastUpdateLabel }}</span>
           </div>
         </div>
+
+        <!-- status / error / refresh -->
+        <p v-if="childLoading" class="loc-msg">⏳ Memuat data terbaru...</p>
+        <p v-else-if="childError" class="loc-msg error">{{ childError }}</p>
+        <p v-else-if="!lastLoc" class="loc-msg warn">
+          Belum ada data. Minta anak menyalakan Tracking Lokasi di HP-nya.
+        </p>
+
+        <button @click="fetchChildStatus" class="btn-refresh" :disabled="childLoading">
+          <RotateCw class="icon-sm" :class="{ spinning: childLoading }" />
+          <span>Refresh</span>
+        </button>
       </section>
 
       <!-- Pengajuan Menunggu Persetujuan -->
@@ -397,6 +422,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import apiClient from '../../utils/api'
 import { Doughnut } from 'vue-chartjs'
+import { getChildStatus } from '../../services/locationService'
 import {
   Wifi,
   AlertTriangle,
@@ -411,7 +437,8 @@ import {
   Thermometer,
   Clock,
   BatteryCharging,
-  MapPin
+  MapPin,
+  RotateCw
 } from 'lucide-vue-next'
 import {
   Chart as ChartJS,
@@ -460,12 +487,50 @@ const attendanceStats = ref({
   alpha: 0
 })
 
-// ===== Telemetri Perangkat Anak (simulasi hardcode, sama seperti siswa) =====
-const mdmStatus = ref({
-  battery: 85,
-  latitude: -6.917464,
-  longitude: 107.619123,
-  lastSync: '10 menit yang lalu'
+// ===== Telemetri Perangkat Anak (LIVE dari /ortu/child-status) =====
+const childStatus = ref(null)      // seluruh data dari API
+const childLoading = ref(false)
+const childError = ref(null)
+const autoRefresh = ref(true)
+let pollTimer = null
+
+const fetchChildStatus = async () => {
+  childLoading.value = true
+  try {
+    const res = await getChildStatus()
+    childStatus.value = res.data || null
+    childError.value = null
+  } catch (error) {
+    console.error('❌ Error fetching child status:', error)
+    // 400 = ortu belum dihubungkan ke siswa
+    childError.value = error.response?.data?.message || 'Gagal mengambil data anak'
+    childStatus.value = null
+  } finally {
+    childLoading.value = false
+  }
+}
+
+// polling tiap 30 detik selama dashboard terbuka
+const startPolling = () => {
+  fetchChildStatus()
+  pollTimer = setInterval(() => {
+    if (autoRefresh.value && !document.hidden) fetchChildStatus()
+  }, 30000)
+}
+
+const stopPolling = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+// data lokasi anak — bentuk response: data.last_location
+const lastLoc = computed(() => childStatus.value?.last_location || null)
+
+const lastUpdateLabel = computed(() => {
+  if (!lastLoc.value?.updated_at) return '—'
+  return formatTimeAgo(lastLoc.value.updated_at)
 })
 
 // ===== Chart =====
@@ -812,12 +877,14 @@ onMounted(() => {
 
   fetchRequests()
   fetchAttendanceStats()
+  startPolling()
 })
 
 onUnmounted(() => {
   if (clickOutsideHandler) {
     document.removeEventListener('click', clickOutsideHandler)
   }
+  stopPolling()
 })
 </script>
 

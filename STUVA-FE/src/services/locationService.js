@@ -30,3 +30,14 @@ export const getLiveLocations = async () => {
   const { data } = await apiClient.get(LIVE_ENDPOINT)
   return data
 }
+
+const CHILD_STATUS_ENDPOINT = '/ortu/child-status'
+
+/**
+ * Ambil status anak (lokasi + baterai terakhir) untuk dashboard ortu.
+ * Response: { status, data: { student, last_location: {...} } }
+ */
+export const getChildStatus = async () => {
+  const { data } = await apiClient.get(CHILD_STATUS_ENDPOINT)
+  return data
+}
