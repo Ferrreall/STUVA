@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ParentController;
 use App\Http\Controllers\Api\DashboardAdminController;
 use App\Http\Controllers\Api\StudentAttendanceController;
 use App\Http\Controllers\Api\AdminAttendanceController;
+use App\Http\Controllers\Api\TeacherDashboardController;
 use Illuminate\Http\Request;
 
 // Public Route
@@ -30,11 +31,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/permissions/{id}/parent-approve', [PermissionController::class, 'parentApproval']); // Ortu
     Route::get('/siswa/attendance-history', [StudentAttendanceController::class, 'index']);
 
+    // Route Teacher Dashboard
+    Route::get('/guru/dashboard', [TeacherDashboardController::class, 'index']);
+    
     // Route Change Password
     Route::post('/profile', [AuthController::class, 'updateProfile']);
     Route::post('/profile/change-password', [AuthController::class, 'changePassword']);
 
     // Crud User (Admin)
+    Route::get('/available-classes', [UserController::class, 'getAvailableClasses']);
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/stats', [UserController::class, 'getStats']);
     Route::get('/users/{id}', [UserController::class, 'show']);
