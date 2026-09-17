@@ -17,6 +17,12 @@ class LocationLog extends Model
         'recorded_at',
     ];
 
+    protected $casts = [
+        'recorded_at' => 'datetime',
+        'latitude'    => 'float',
+        'longitude'   => 'float',
+    ];
+
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');
