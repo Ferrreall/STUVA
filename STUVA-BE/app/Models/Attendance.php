@@ -14,6 +14,10 @@ class Attendance extends Model
         'permission_request_id',
         'date',
         'status',
+        'check_in',
+        'check_out',
+        'location',
+        'method',
         'notes',
         'entry_type', // Menandai apakah entri dibuat oleh Admin atau Siswa
     ];
