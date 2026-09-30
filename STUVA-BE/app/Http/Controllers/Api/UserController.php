@@ -99,7 +99,7 @@ class UserController extends Controller
             'email'        => 'required|string|email|max:255|unique:users',
             'password'     => 'required|string|min:8',
             'role'         => 'required|in:siswa,ortu,guru',
-            'class_name'   => 'required_if:role,siswa|nullable|string|max:255',
+            'class_name'   => 'required_if:role,siswa|nullable',
             'student_id'   => 'required_if:role,ortu|nullable|exists:users,id',
             // Field profil baru
             'nisn'         => 'required_if:role,siswa|nullable|string|max:20|unique:users,nisn',
@@ -113,13 +113,23 @@ class UserController extends Controller
         ]);
 
         try {
+
+            $classNameValue = null;
+if ($request->role === 'siswa') {
+    $classNameValue = $validated['class_name'] ?? null;
+} elseif ($request->role === 'guru') {
+    // Jika dikirim array dari FE: ["XII RPL 1", "XII RPL 2"], langsung simpan array-nya!
+    // Laravel $casts 'array' akan otomatis mengubahnya ke JSON di DB.
+    $classNameValue = $request->class_name;
+}
+
             $user = User::create([
                 'name'         => $validated['name'],
                 'username'     => $validated['username'],
                 'email'        => $validated['email'],
                 'password'     => Hash::make($validated['password']),
                 'role'         => $validated['role'],
-                'class_name'   => $request->role === 'siswa' ? $validated['class_name'] : null,
+                'class_name'   => $classNameValue,
                 'student_id'   => $request->role === 'ortu' ? $validated['student_id'] : null,
                 'nisn'         => $request->role === 'siswa' ? ($validated['nisn'] ?? null) : null,
                 'nip'          => $request->role === 'guru' ? ($validated['nip'] ?? null) : null,
@@ -173,7 +183,7 @@ class UserController extends Controller
             'email'        => 'required|string|email|max:255|unique:users,email,' . $id,
             'password'     => 'nullable|string|min:8',
             'role'         => 'required|in:siswa,ortu,guru,admin',
-            'class_name'   => 'required_if:role,siswa|nullable|string|max:255',
+            'class_name'   => 'required_if:role,siswa|nullable',
             'student_id'   => 'required_if:role,ortu|nullable|exists:users,id',
             // Field profil baru
             'nisn'         => 'required_if:role,siswa|nullable|string|max:20|unique:users,nisn,' . $id,
@@ -187,12 +197,22 @@ class UserController extends Controller
         ]);
 
         try {
+
+        $classNameValue = null;
+if ($request->role === 'siswa') {
+    $classNameValue = $validated['class_name'] ?? null;
+} elseif ($request->role === 'guru') {
+    // Jika dikirim array dari FE: ["XII RPL 1", "XII RPL 2"], langsung simpan array-nya!
+    // Laravel $casts 'array' akan otomatis mengubahnya ke JSON di DB.
+    $classNameValue = $request->class_name;
+}
+
             $dataToUpdate = [
                 'name'         => $validated['name'],
                 'username'     => $validated['username'],
                 'email'        => $validated['email'],
                 'role'         => $validated['role'],
-                'class_name'   => $request->role === 'siswa' ? $validated['class_name'] : null,
+                'class_name'   => $classNameValue,
                 'student_id'   => $request->role === 'ortu' ? $validated['student_id'] : null,
                 'nisn'         => $request->role === 'siswa' ? ($validated['nisn'] ?? null) : null,
                 'gender'       => $validated['gender'] ?? null,
@@ -277,6 +297,75 @@ class UserController extends Controller
             'message' => 'Password berhasil diubah'
         ]);
     }
+
+public function getAvailableClasses()
+{
+    // 1. Daftar kelas standar sekolah (Default Options)
+    $defaultClasses = [
+        'X RPL 1',
+        'X RPL 2',
+        'XI RPL 1',
+        'XI RPL 2',
+        'XII RPL 1',
+        'XII RPL 2',
+    ];
+
+    $options = [];
+    $registeredClasses = []; // Untuk melacak kelas yang sudah diampu guru
+
+    // 2. Ambil data guru yang sudah ada di database
+    $teachers = User::where('role', 'guru')
+        ->whereNotNull('class_name')
+        ->where('class_name', '!=', '')
+        ->get(['id', 'name', 'class_name']);
+
+    foreach ($teachers as $teacher) {
+        $classes = $teacher->class_name;
+
+        if (is_string($classes)) {
+            $decoded = json_decode($classes, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $classes = $decoded;
+            }
+        }
+
+        if (is_array($classes)) {
+            foreach ($classes as $class) {
+                if (!empty($class)) {
+                    $options[] = [
+                        'class_name'   => $class,
+                        'label'        => $class . ' -- ' . $teacher->name,
+                        'teacher_name' => $teacher->name
+                    ];
+                    $registeredClasses[] = $class;
+                }
+            }
+        } elseif (is_string($classes) && !empty($classes)) {
+            $options[] = [
+                'class_name'   => $classes,
+                'label'        => $classes . ' -- ' . $teacher->name,
+                'teacher_name' => $teacher->name
+            ];
+            $registeredClasses[] = $classes;
+        }
+    }
+
+    // 3. Tambahkan kelas standar jika belum terdaftar dari guru mana pun
+    foreach ($defaultClasses as $defaultClass) {
+        if (!in_array($defaultClass, $registeredClasses)) {
+            $options[] = [
+                'class_name'   => $defaultClass,
+                'label'        => $defaultClass, // Hanya nama kelas biasa
+                'teacher_name' => null
+            ];
+        }
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'data'   => $options
+    ]);
+}
 
     // Hapus User
     public function destroy($id)

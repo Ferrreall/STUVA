@@ -56,9 +56,19 @@ class AuthController extends Controller
     }
 
     public function me(Request $request)
-    {
-        $user = User::with('student')->find($request->user()->id);
+{
+    $user = User::with('student')->find($request->user()->id);
 
-        return response()->json($user);
+    if (!$user) {
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'User tidak ditemukan'
+        ], 404);
     }
+
+    // Ubah ke array murni untuk membuang instance getter/proxy yang menyebabkan malformed serialization
+    $userData = $user->toArray();
+
+    return response()->json($userData, 200, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+}
 }

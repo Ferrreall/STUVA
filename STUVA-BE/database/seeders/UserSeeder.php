@@ -21,11 +21,14 @@ class UserSeeder extends Seeder
 
         // 1. Buat Account Guru
         $guru = User::create([
-            'name' => 'Pak Guru Test',
-            'username' => '198501012026011001', // NIP
-            'email' => 'guru@school.id',
-            'password' => Hash::make('password123'),
-            'role' => 'guru',
+            'name'       => 'Pak Guru Test',
+            'username'   => '198501012026011001', // NIP
+            'email'      => 'guru@school.id',
+            'password'   => Hash::make('password123'),
+            'role'       => 'guru',
+            'class_name' => json_encode(['XII RPL 1', 'XII RPL 2']), // <-- TAMBAHKAN INI (Array kelas yang diampu)
+            'nip'        => '198501012026011001',
+            'subject'    => 'Pemrograman Web',
         ]);
 
         // 2. Buat Account Siswa
