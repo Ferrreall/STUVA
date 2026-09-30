@@ -1,15 +1,107 @@
 <template>
-  <div class="manage-container">
+  <div class="manage-container" :class="{ 'sidebar-open': sidebarOpen }">
+    <!-- ★ Page Shell ★ -->
+    <div class="page-shell">
+
+        <!-- Sidebar -->
+    <div class="sidebar-overlay" @click="closeSidebar"></div>
+
+    <aside class="sidebar" :class="{ open: sidebarOpen }" @click.self="closeSidebar">
+      <div class="sidebar-head">
+        <span class="sidebar-brand">STUVA</span>
+        <button class="sidebar-close" @click="closeSidebar" aria-label="Tutup">
+          <X class="icon-sm" />
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/dashboard') }"
+          @click="sidebarNavigate('/admin/dashboard')"
+        >
+          <Home class="icon-sm" />
+          <span>Dashboard</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/siswa') }"
+          @click="sidebarNavigate('/admin/siswa')"
+        >
+          <Users class="icon-sm" />
+          <span>Kelola Siswa</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/guru') }"
+          @click="sidebarNavigate('/admin/guru')"
+        >
+          <GraduationCap class="icon-sm" />
+          <span>Kelola Guru</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/ortu') }"
+          @click="sidebarNavigate('/admin/ortu')"
+        >
+          <HeartHandshake class="icon-sm" />
+          <span>Kelola Orang Tua</span>
+        </button>
+        
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/years') }"
+          @click="sidebarNavigate('/admin/years')"
+        >
+          <CalendarDays class="icon-sm" />
+          <span>Tahun Ajaran</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/profile') }"
+          @click="sidebarNavigate('/admin/profile')"
+        >
+          <User class="icon-sm" />
+          <span>Profil Saya</span>
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <button class="sidebar-item logout" @click="handleLogout">
+          <LogOut class="icon-sm" />
+          <span>Keluar</span>
+        </button>
+      </nav>
+
+            <div class="sidebar-year">
+        <CalendarDays class="icon-sm" />
+        <span>TA {{ activeYear?.name || '—' }}</span>
+      </div>
+
+      <div class="sidebar-foot">
+        <p class="sidebar-foot-name">Panel Admin</p>
+        <p class="sidebar-foot-sub">Manajemen Pengguna</p>
+      </div>
+    </aside>
+
     <!-- Header -->
     <header class="header">
       <div class="header-content">
-        <button @click="goBack" class="btn-back">
-          <ChevronLeft class="icon-md" />
-        </button>
-            <div class="header-title-wrap">
-                <h1 class="header-title">{{ title }}</h1>
-                <span v-if="totalCount !== null" class="header-count">{{ totalCount }}</span>
-            </div>
+        <div class="header-left-group">
+          <button @click="toggleSidebar" class="sidebar-toggle" aria-label="Menu">
+            <Menu class="icon-md" />
+          </button>
+        </div>
+
+        <div class="header-title-wrap">
+          <h1 class="header-title">{{ title }}</h1>
+          <span v-if="totalCount !== null" class="header-count">{{ totalCount }}</span>
+        </div>
+
         <button @click="openCreate" class="btn-add-header">
           <Plus class="icon-sm" />
         </button>
@@ -29,9 +121,13 @@
               :placeholder="`Cari ${roleLabel.toLowerCase()}...`"
             />
           </div>
-          <button @click="openCreate" class="btn btn-primary">
-            <Plus class="icon-sm" />
-            <span>Tambah {{ roleLabel }}</span>
+          <button @click="exportUsers" class="btn btn-secondary" :disabled="filteredUsers.length === 0">
+            <Download class="icon-sm" />
+            <span>Export</span>
+          </button>
+          <button @click="openImport" class="btn btn-primary">
+            <Upload class="icon-sm" />
+            <span>Import</span>
           </button>
         </div>
       </section>
@@ -93,6 +189,7 @@
         </div>
       </section>
     </main>
+    </div>
 
     <!-- Modal Tambah/Edit -->
     <Teleport to="body">
@@ -193,6 +290,97 @@
       </div>
     </Teleport>
 
+        <!-- Modal Import -->
+    <Teleport to="body">
+      <div v-if="showImportModal" class="modal-overlay" @click="showImportModal = false">
+        <div class="modal-container" @click.stop>
+          <div class="modal-header">
+            <h3 class="modal-title">Import {{ roleLabel }}</h3>
+            <button @click="showImportModal = false" class="btn-close">
+              <X class="icon-sm" />
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Step 1: template -->
+            <div class="import-step">
+              <p class="import-step-title">1. Download template dulu</p>
+              <p class="import-hint">
+                Isi datamu mengikuti kolom &amp; contoh di template. Jangan ubah urutan/nama kolom.
+              </p>
+              <button @click="downloadTemplate" class="btn btn-secondary">
+                <Download class="icon-sm" />
+                <span>Download Template</span>
+              </button>
+            </div>
+
+            <!-- Step 2: upload -->
+            <div class="import-step">
+              <p class="import-step-title">2. Upload file Excel</p>
+              <input
+                type="file"
+                class="form-input"
+                accept=".xlsx,.xls,.csv"
+                @change="handleImportFile"
+                :disabled="importing"
+              />
+              <p v-if="parseError" class="loc-msg error">{{ parseError }}</p>
+
+              <div v-if="parsedRows.length" class="import-preview">
+                <p class="import-preview-title">
+                  <CheckCircle class="icon-sm" />
+                  {{ parsedRows.length }} baris terbaca
+                  <span v-if="invalidRows.length" class="import-warn">
+                    · {{ invalidRows.length }} baris bermasalah (akan dilewati)
+                  </span>
+                </p>
+                <ul class="import-issue-list">
+                  <li v-for="(iss, i) in invalidRows.slice(0, 5)" :key="i" class="import-issue">
+                    Baris {{ iss.row }}: {{ iss.message }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Step 3: proses -->
+            <div class="import-step">
+              <p class="import-step-title">3. Proses import</p>
+
+              <div v-if="importing" class="import-progress">
+                <div class="import-progress-bar">
+                  <div class="import-progress-fill" :style="{ width: progressPercent + '%' }"></div>
+                </div>
+                <p class="import-progress-text">{{ importProgress }} / {{ importTotal }}</p>
+              </div>
+
+              <button
+                @click="processImport"
+                class="btn btn-submit"
+                :disabled="!parsedRows.length || importing || parsedRows.length === invalidRows.length"
+              >
+                <Upload class="icon-sm" />
+                <span>
+                  {{ importing ? 'Mengimport...' : `Import ${validRows.length} Data` }}
+                </span>
+              </button>
+
+              <!-- hasil -->
+              <div v-if="importResults.length" class="import-results">
+                <p class="import-summary">
+                  ✅ {{ successCount }} berhasil · ❌ {{ failCount }} gagal
+                </p>
+                <ul class="import-issue-list">
+                  <li v-for="(r, i) in importResults.filter(r => !r.ok)" :key="i" class="import-issue">
+                    {{ r.name }}: {{ r.message }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- Toast -->
     <Teleport to="body">
       <div v-if="showToast" class="toast-notification" :class="toastType">
@@ -207,12 +395,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import * as XLSX from 'xlsx'
+import { useAcademicYear } from '../../composables/useAcademicYear'
+import { CalendarDays } from 'lucide-vue-next'   // ikon buat badge
 import apiClient from '../../utils/api'
 import {
   ChevronLeft, Plus, Search, User, Users, Mail, Phone, School,
-  Edit2, Trash2, X, CheckCircle, AlertTriangle
+  Edit2, Trash2, X, CheckCircle, AlertTriangle,
+  Menu, Home, GraduationCap, HeartHandshake, LogOut,
+  Download, Upload
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -221,6 +414,27 @@ const props = defineProps({
 })
 
 const router = useRouter()
+
+const route = useRoute()
+
+// ===== Sidebar =====
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
+const closeSidebar = () => { sidebarOpen.value = false }
+
+const isActive = (path) => route.path === path
+
+const sidebarNavigate = (path) => {
+  sidebarOpen.value = false
+  router.push(path)
+}
+
+const handleLogout = () => {
+  sidebarOpen.value = false
+  localStorage.clear()
+  router.push({ path: '/login', query: { logout: 'success' } })
+}
 
 const roleLabel = computed(() =>
   ({ siswa: 'Siswa', guru: 'Guru', ortu: 'Orang Tua' }[props.role] || props.role)
@@ -254,8 +468,12 @@ const showToast = ref(false)
 const toastMessage = ref('')
 const toastType = ref('success')
 
+const { activeYear, fetchActiveYear } = useAcademicYear()
+
 // ===== Dropdown: daftar siswa (form ortu) =====
 const studentOptions = ref([])
+
+const rawStudents = ref([])
 
 const fetchStudentOptions = async () => {
   if (props.role !== 'ortu') return
@@ -265,6 +483,7 @@ const fetchStudentOptions = async () => {
     const items = Array.isArray(root.data)
       ? root.data
       : Array.isArray(root.data?.data) ? root.data.data : []
+    rawStudents.value = items   
     studentOptions.value = items.map(u => ({
       value: u.id,
       label: `${u.name} — ${u.class_name || 'tanpa kelas'}`
@@ -273,6 +492,217 @@ const fetchStudentOptions = async () => {
     console.error('❌ Gagal ambil daftar siswa:', error)
     studentOptions.value = []
   }
+}
+
+// ===== EXPORT =====
+const exportUsers = () => {
+  const rows = filteredUsers.value.map((u, i) => {
+    const base = {
+      'No': i + 1,
+      'Nama Lengkap': u.name || '',
+      [usernameLabel.value]: u[usernameField.value] || u.username || '',
+      'Email': u.email || '',
+      'No. HP': u.phone_number || u.phone || '',
+    }
+    if (props.role === 'siswa')  base['Kelas'] = formatClasses(u.class_name)
+    if (props.role === 'guru') {
+      base['Mata Pelajaran'] = u.subject || ''
+      base['Kelas yang Diajar'] = formatClasses(u.class_name)
+    }
+    if (props.role === 'ortu')   base['Anak'] = u.student?.name || '-'
+    return base
+  })
+
+  const ws = XLSX.utils.json_to_sheet(rows)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, roleLabel.value)
+  XLSX.writeFile(wb, `daftar-${props.role}-${new Date().toISOString().slice(0, 10)}.xlsx`)
+}
+
+// ===== IMPORT =====
+const showImportModal = ref(false)
+const parsedRows = ref([])        // baris valid siap dikirim
+const invalidRows = ref([])       // baris bermasalah
+const parseError = ref('')
+const importing = ref(false)
+const importProgress = ref(0)
+const importTotal = ref(0)
+const importResults = ref([])
+
+const validRows = computed(() => parsedRows.value)
+const progressPercent = computed(() =>
+  importTotal.value ? Math.round((importProgress.value / importTotal.value) * 100) : 0
+)
+const successCount = computed(() => importResults.value.filter(r => r.ok).length)
+const failCount = computed(() => importResults.value.filter(r => !r.ok).length)
+
+const openImport = () => {
+  parsedRows.value = []
+  invalidRows.value = []
+  parseError.value = ''
+  importResults.value = []
+  importProgress.value = 0
+  importTotal.value = 0
+  showImportModal.value = true
+}
+
+// kolom template per role
+const templateColumns = computed(() => {
+  const base = ['Nama Lengkap', usernameLabel.value, 'Email', 'No. HP', 'Password']
+  if (props.role === 'siswa') return [...base, 'Kelas']
+  if (props.role === 'guru')  return [...base, 'Mata Pelajaran', 'Kelas yang Diajar (pisah koma)']
+  if (props.role === 'ortu')  return [...base, 'NISN Anak']
+  return base
+})
+
+const downloadTemplate = () => {
+  const headers = templateColumns.value
+  const example = {}
+  headers.forEach(h => { example[h] = '' })
+  example['Nama Lengkap'] = 'Contoh Nama'
+  example[usernameLabel.value] = '1234567890'
+  example['Email'] = 'contoh@sekolah.id'
+  example['No. HP'] = '081234567890'
+  example['Password'] = 'min8karakter'
+  if (props.role === 'siswa')  example['Kelas'] = 'XII RPL 1'
+  if (props.role === 'guru') {
+    example['Mata Pelajaran'] = 'Matematika'
+    example['Kelas yang Diajar (pisah koma)'] = 'XII RPL 1, XI RPL 2'
+  }
+  if (props.role === 'ortu')   example['NISN Anak'] = '1234567890'
+
+  const ws = XLSX.utils.json_to_sheet([example], { header: headers })
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Template')
+  XLSX.writeFile(wb, `template-import-${props.role}.xlsx`)
+}
+
+// validasi 1 baris → balikin { payload } atau { error }
+const validateRow = (row, existingIdentifiers, seenIdentifiers) => {
+  const get = (k) => String(row[k] ?? '').trim()
+
+  const name = get('Nama Lengkap')
+  const identifier = get(usernameLabel.value)
+  const email = get('Email')
+  let password = get('Password')
+
+  if (!name)   return { error: 'Nama kosong' }
+  if (!identifier) return { error: `${usernameLabel.value} kosong` }
+  if (!email)  return { error: 'Email kosong' }
+
+  if (existingIdentifiers.has(identifier)) return { error: `${usernameLabel.value} ${identifier} sudah terdaftar` }
+  if (seenIdentifiers.has(identifier))     return { error: `${usernameLabel.value} ${identifier} duplikat di file` }
+
+  // password kosong → pakai identifier (NISN/NIP 10 digit aman); kalau pendek → random
+  if (!password) password = identifier.length >= 8 ? identifier : Math.random().toString(36).slice(2, 10)
+
+  const payload = {
+    name,
+    email,
+    password,
+    phone_number: get('No. HP'),
+    role: props.role,
+  }
+  payload[usernameField.value] = identifier
+
+  if (props.role === 'siswa') {
+    const kelas = get('Kelas')
+    if (!kelas) return { error: 'Kelas kosong' }
+    payload.class_name = kelas
+    payload.username = identifier
+  }
+  if (props.role === 'guru') {
+    const kelasStr = get('Kelas yang Diajar (pisah koma)')
+    if (!kelasStr) return { error: 'Kelas yang diajar kosong' }
+    const mapel = get('Mata Pelajaran')
+    if (!mapel) return { error: 'Mata pelajaran kosong' }
+    payload.subject = mapel
+    payload.class_name = JSON.stringify(kelasStr.split(',').map(s => s.trim()).filter(Boolean))
+    payload.username = identifier
+  }
+  if (props.role === 'ortu') {
+    const nisnAnak = get('NISN Anak')
+    if (!nisnAnak) return { error: 'NISN Anak kosong' }
+    const anak = rawStudents.value.find(s =>
+      String(s.nisn || s.username || '').trim() === nisnAnak
+    )
+    if (!anak) return { error: `Siswa dengan NISN ${nisnAnak} tidak ditemukan` }
+    payload.student_id = anak.id
+    payload.username = get('Username')
+    if (!payload.username) return { error: 'Username kosong' }
+  }
+
+  return { payload }
+}
+
+const handleImportFile = (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  parseError.value = ''
+  parsedRows.value = []
+  invalidRows.value = []
+
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    try {
+      const wb = XLSX.read(ev.target.result, { type: 'array' })
+      const ws = wb.Sheets[wb.SheetNames[0]]
+      const json = XLSX.utils.sheet_to_json(ws, { defval: '' })
+
+      const existing = new Set(
+        users.value.map(u => String(u[usernameField.value] || u.username || '').trim())
+      )
+      const seen = new Set()
+      const valid = []
+      const invalid = []
+
+      json.forEach((row, idx) => {
+        const res = validateRow(row, existing, seen)
+        if (res.error) {
+          invalid.push({ row: idx + 2, message: res.error }) // +2: header + 1-based
+        } else {
+          valid.push(res.payload)
+          seen.add(String(row[usernameLabel.value] ?? '').trim())
+        }
+      })
+
+      parsedRows.value = valid
+      invalidRows.value = invalid
+      if (json.length === 0) parseError.value = 'File kosong / tidak ada baris data.'
+
+    } catch (err) {
+      console.error(err)
+      parseError.value = 'Gagal membaca file. Pastikan format sesuai template.'
+    }
+  }
+  reader.readAsArrayBuffer(file)
+}
+
+const processImport = async () => {
+  importing.value = true
+  importResults.value = []
+  importTotal.value = validRows.value.length
+  importProgress.value = 0
+
+  for (const payload of validRows.value) {
+    try {
+      await apiClient.post('/users', payload)
+      importResults.value.push({ name: payload.name, ok: true, message: 'Berhasil' })
+    } catch (e) {
+      importResults.value.push({
+        name: payload.name,
+        ok: false,
+        message: e.response?.data?.message || 'Gagal (mungkin data duplikat di server)'
+      })
+    }
+    importProgress.value++
+  }
+
+  importing.value = false
+  await fetchUsers()
+  await fetchStats()
+  displayToast(`Import selesai: ${successCount.value} berhasil, ${failCount.value} gagal`,
+    failCount.value ? 'error' : 'success')
 }
 
 // ===== Dropdown: daftar kelas (form siswa & guru) =====
@@ -544,11 +974,33 @@ const doDelete = async () => {
   }
 }
 
+let escHandler = null
+
 onMounted(() => {
   fetchUsers()
   fetchStats()
   fetchStudentOptions()
   fetchClassOptions()
+
+  escHandler = (e) => {
+    if (e.key === 'Escape') closeSidebar()
+  }
+  document.addEventListener('keydown', escHandler)
+})
+// ★ komponen di-reuse antar route (/admin/siswa ↔ /admin/guru ↔ /admin/ortu),
+//   onMounted cuma jalan sekali → refetch tiap role berubah
+watch(() => props.role, (newRole, oldRole) => {
+  if (newRole !== oldRole) {
+    search.value = ''          // reset pencarian biar nggak nyangkut
+    fetchUsers()
+    fetchStats()
+    fetchStudentOptions()
+    fetchClassOptions()
+    fetchActiveYear()   
+  }
+})
+onUnmounted(() => {
+  document.removeEventListener('keydown', escHandler)
 })
 </script>
 

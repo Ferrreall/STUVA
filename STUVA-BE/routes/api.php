@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ParentController;
 use App\Http\Controllers\Api\DashboardAdminController;
 use App\Http\Controllers\Api\StudentAttendanceController;
 use App\Http\Controllers\Api\AdminAttendanceController;
+use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\TeacherDashboardController;
 use Illuminate\Http\Request;
 
@@ -42,10 +43,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/available-classes', [UserController::class, 'getAvailableClasses']);
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/stats', [UserController::class, 'getStats']);
+    Route::get('/available-classes', [UserController::class, 'getAvailableClasses']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::post('/users', [UserController::class, 'store']);
     Route::post('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+    Route::get('/academic-years', [AcademicYearController::class, 'index']);
+    Route::post('/academic-years', [AcademicYearController::class, 'store']);
+    Route::post('/academic-years/{id}', [AcademicYearController::class, 'update']);
+    Route::post('/academic-years/{id}/activate', [AcademicYearController::class, 'activate']);
+    Route::delete('/academic-years/{id}', [AcademicYearController::class, 'destroy']);
+
+    Route::get('/siswa/absen-status', [StudentAttendanceController::class, 'absenStatus']);
+    Route::post('/siswa/absen', [StudentAttendanceController::class, 'absen']);
 });
 
 // Admin Routes (Butuh Token Sanctum)

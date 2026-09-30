@@ -40,7 +40,7 @@
   --surface:        rgba(255, 255, 255, .78);
   --surface-strong: rgba(255, 255, 255, .94);
 
-  --content-max: 800px;
+  --content-max: 1200px;
 
   --radius-sm: 14px;
   --radius-md: 22px;
@@ -212,7 +212,39 @@
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+}
+
+/* stat tile: lebih lapang di layar lebar */
+@media (min-width: 1024px) {
+  .month-stats { gap: 14px; }
+  .mstat { padding: 18px 8px 16px; }
+  .mstat-value { font-size: 1.6rem; }
+  .mstat-label { font-size: .7rem; }
+}
+
+/* filter chip: tetap satu baris rapi */
+.filter-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+
+/* empty state: nggak gede-gede amat */
+.empty-state { padding: 56px 16px; }
+
+/* item absen: batasi tinggi kontennya, isi melebar natural */
+.att-item { padding: 14px 16px; }
+
+@media (min-width: 1024px) {
+  .month-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px 24px;
+    align-items: center;
+  }
+  .month-nav { grid-column: 1; }
+  .month-stats {
+    grid-column: 2;
+    margin-top: 0;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 .main-content > * {
@@ -636,5 +668,198 @@
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
+  }
+}
+
+/* ============================================================
+   SIDEBAR + HEADER EXTRA (Presensi)
+============================================================ */
+
+/* --- header: grup kiri (toggle + back + judul) --- */
+.header-left-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar-toggle {
+  width: 38px; height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.14);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.sidebar-toggle:hover { background: rgba(255,255,255,.28); }
+.sidebar-toggle:active { transform: scale(.92); }
+
+/* avatar kecil di kanan header */
+.header-user-chip {
+  display: flex;
+  align-items: center;
+}
+.avatar-mini {
+  width: 36px; height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #ffffff;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.avatar-mini:hover { background: rgba(255,255,255,.28); }
+
+/* --- sidebar (sama seperti dashboard, warna purple siswa) --- */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 260px;
+  z-index: 950;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  color: #ffffff;
+  background: linear-gradient(180deg, #241056 0%, #2e1065 55%, #3b1d84 100%);
+  box-shadow: 6px 0 40px rgba(30,10,78,.4);
+  transform: translateX(-100%);
+  transition: transform .3s var(--ease-out);
+}
+.presensi-container.sidebar-open .sidebar {
+  transform: translateX(0);
+}
+
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  margin-bottom: 14px;
+}
+
+.sidebar-brand {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  background: linear-gradient(90deg, #ffffff 30%, #f5d0fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sidebar-close {
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.sidebar-close:hover { background: rgba(255,255,255,.25); transform: rotate(90deg); }
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  color: rgba(255,255,255,.72);
+  font-size: .875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+.sidebar-item:hover {
+  background: rgba(255,255,255,.1);
+  color: #ffffff;
+  padding-left: 18px;
+}
+.sidebar-item.active {
+  background: linear-gradient(135deg, var(--brand-600), var(--pink-500));
+  color: #ffffff;
+  box-shadow: 0 6px 16px -6px rgba(124,58,237,.6);
+}
+.sidebar-item.logout { color: #fda4af; }
+.sidebar-item.logout:hover { background: rgba(225,29,72,.18); color: #fecdd3; }
+
+.sidebar-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+  margin: 8px 4px;
+}
+
+/* --- overlay (HP saja) --- */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30,10,78,.45);
+  z-index: 940;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.presensi-container.sidebar-open .sidebar-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================================
+   ★ PAGE SHELL: header + konten geser & FULL bareng
+============================================================ */
+.page-shell {
+  position: relative;
+  transition: margin-left .3s var(--ease-out);
+}
+
+/* --- desktop: shell digeser 260px, header & konten FULL di ruang tersisa --- */
+@media (min-width: 1024px) {
+  .presensi-container.sidebar-open .page-shell {
+    margin-left: 260px;          /* ← geser via MARGIN, bukan transform */
+  }
+
+  /* header: penuhi seluruh lebar ruang tersisa */
+  .presensi-container.sidebar-open .header {
+    width: calc(100% - 32px);
+    max-width: none;
+  }
+
+  /* konten: FULL — lepas batas 800px */
+  .presensi-container.sidebar-open .main-content {
+    width: calc(100% - 32px);
+    max-width: none;
+  }
+}
+
+/* --- HP: sidebar overlay, nggak ada yang digeser --- */
+@media (max-width: 1023px) {
+  .presensi-container.sidebar-open .page-shell {
+    margin-left: 0;
   }
 }
