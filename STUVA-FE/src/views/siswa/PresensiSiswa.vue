@@ -1,15 +1,83 @@
 <template>
-  <div class="presensi-container">
-    <!-- Header -->
-    <header class="header">
-      <div class="header-content">
-        <button @click="goBack" class="btn-back">
-          <ChevronLeft class="icon-md" />
+  <div class="presensi-container" :class="{ 'sidebar-open': sidebarOpen }">
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" @click="closeSidebar"></div>
+
+    <!-- Sidebar (berdiri sendiri, JANGAN dibungkus apa pun) -->
+    <aside class="sidebar" :class="{ open: sidebarOpen }" @click.self="closeSidebar">
+      <div class="sidebar-head">
+        <span class="sidebar-brand">STUVA</span>
+        <button class="sidebar-close" @click="closeSidebar" aria-label="Tutup">
+          <X class="icon-sm" />
         </button>
-        <h1 class="header-title">Riwayat Absen</h1>
-        <div class="header-spacer"></div>
       </div>
-    </header>
+
+      <nav class="sidebar-nav">
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/dashboard') }"
+          @click="sidebarNavigate('/siswa/dashboard')"
+        >
+          <Home class="icon-sm" />
+          <span>Dashboard</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/presensi') }"
+          @click="sidebarNavigate('/siswa/presensi')"
+        >
+          <Calendar class="icon-sm" />
+          <span>Riwayat Absen</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/profile') }"
+          @click="sidebarNavigate('/siswa/profile')"
+        >
+          <User class="icon-sm" />
+          <span>Profil Saya</span>
+        </button>
+        
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/absen') }"
+          @click="sidebarNavigate('/siswa/absen')"
+        >
+          <MapPin class="icon-sm" />
+          <span>Absen</span>
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <button class="sidebar-item logout" @click="handleLogout">
+          <LogOut class="icon-sm" />
+          <span>Keluar</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- ★ PAGE SHELL: membungkus HEADER + KONTEN, geser bareng ★ -->
+    <div class="page-shell">
+
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <div class="header-left-group">
+            <button @click="toggleSidebar" class="sidebar-toggle" aria-label="Menu">
+              <Menu class="icon-md" />
+            </button>
+            <h1 class="header-title">Riwayat Absen</h1>
+          </div>
+          <div class="header-user-chip">
+            <div class="avatar-mini">
+              <User class="icon-xs" />
+            </div>
+          </div>
+        </div>
+      </header>
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-container">
@@ -18,8 +86,8 @@
     </div>
 
     <main v-else class="main-content">
-      <!-- Navigasi Bulan + Ringkasan -->
-      <section class="card month-card">
+        <!-- Navigasi Bulan + Ringkasan -->
+        <section class="card month-card">
         <div class="month-nav">
           <button @click="prevMonth" class="month-btn" aria-label="Bulan sebelumnya">
             <ChevronLeft class="icon-sm" />
@@ -129,12 +197,13 @@
         </div>
       </section>
     </main>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import apiClient from '../../utils/api'
 import {
   ChevronLeft,
@@ -144,10 +213,36 @@ import {
   LogIn,
   LogOut,
   QrCode,
-  MapPin
+  MapPin,
+  Menu,
+  Home,
+  User,
+  X
 } from 'lucide-vue-next'
 
 const router = useRouter()
+
+const route = useRoute()
+
+// ===== Sidebar =====
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
+const closeSidebar = () => { sidebarOpen.value = false }
+
+const isActive = (path) => route.path === path
+
+const sidebarNavigate = (path) => {
+  sidebarOpen.value = false
+  router.push(path)
+}
+
+// logout simpel: hapus token + redirect
+const handleLogout = () => {
+  sidebarOpen.value = false
+  localStorage.clear()
+  router.push({ path: '/login', query: { logout: 'success' } })
+}
 
 const loading = ref(true)
 const activeFilter = ref('all')
@@ -305,7 +400,20 @@ const dayNum = (date) => new Date(date).getDate()
 
 const goBack = () => router.back()
 
-onMounted(fetchAttendances)
+let escHandler = null
+
+onMounted(() => {
+  fetchAttendances()
+
+  escHandler = (e) => {
+    if (e.key === 'Escape') closeSidebar()
+  }
+  document.addEventListener('keydown', escHandler)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', escHandler)
+})
 </script>
 
 <style scoped>

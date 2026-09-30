@@ -43,6 +43,12 @@ const routes = [
   meta: { requiresAuth: true, role: 'siswa' }
   },
   {
+  path: '/siswa/absen',
+  name: 'AbsenSiswa',
+  component: () => import('../views/siswa/AbsenSiswa.vue'),
+  meta: { requiresAuth: true, role: 'siswa' }
+  },
+  {
     path: '/guru/dashboard',
     name: 'DashboardGuru',
     component: DashboardGuru,
@@ -99,6 +105,12 @@ const routes = [
     props: { role: 'ortu', title: 'Kelola Orang Tua' },
     meta: { requiresAuth: true, role: 'admin' }
   },
+  {
+  path: '/admin/years',
+  name: 'AdminYears',
+  component: () => import('../views/admin/ManageYears.vue'),
+  meta: { requiresAuth: true, role: 'admin' }
+  }
 ]
 
 const router = createRouter({

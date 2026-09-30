@@ -1,9 +1,76 @@
 <template>
-  <div class="dashboard-container">
+  <div class="dashboard-container" :class="{ 'sidebar-open': sidebarOpen }">
+    
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" @click="closeSidebar"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }" @click.self="closeSidebar">
+      <div class="sidebar-head">
+        <span class="sidebar-brand">STUVA</span>
+        <button class="sidebar-close" @click="closeSidebar" aria-label="Tutup">
+          <X class="icon-sm" />
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/dashboard') }"
+          @click="sidebarNavigate('/siswa/dashboard')"
+        >
+          <Home class="icon-sm" />
+          <span>Dashboard</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/presensi') }"
+          @click="sidebarNavigate('/siswa/presensi')"
+        >
+          <Calendar class="icon-sm" />
+          <span>Riwayat Absen</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/profile') }"
+          @click="sidebarNavigate('/siswa/profile')"
+        >
+          <User class="icon-sm" />
+          <span>Profil Saya</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/absen') }"
+          @click="sidebarNavigate('/siswa/absen')"
+        >
+          <MapPin class="icon-sm" />
+          <span>Absen</span>
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <button class="sidebar-item logout" @click="handleLogout">
+          <LogOut class="icon-sm" />
+          <span>Keluar</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <p class="sidebar-foot-name">{{ user.name }}</p>
+        <p class="sidebar-foot-sub">{{ user.class_name }} · {{ user.username }}</p>
+      </div>
+    </aside>
+
+  <div class="page-shell">
+
     <!-- Header -->
     <header class="header">
       <div class="header-content">
         <div class="header-left">
+          <button @click="toggleSidebar" class="sidebar-toggle" aria-label="Menu">
+            <Menu class="icon-md" />
+          </button>
           <h1 class="app-name">STUVA</h1>
         </div>
         <div class="header-right">
@@ -14,6 +81,10 @@
             <button @click="toggleProfileMenu" class="profile-button">
               <div class="avatar">
                 <User class="icon-sm" />
+              </div>
+              <div class="profile-button-text">
+                <span class="pb-name">{{ user.name }}</span>
+                <span class="pb-sub">{{ user.class_name }}</span>
               </div>
               <ChevronDown class="icon-xs chevron" :class="{ 'rotated': showProfileMenu }" />
             </button>
@@ -49,7 +120,7 @@
         </div>
       </div>
     </header>
-
+    
     <main class="main-content">
       <!-- Hero Greeting -->
       <section class="hero-greeting col-12">
@@ -303,6 +374,7 @@
         </div>
       </section>
     </main>
+    </div>
 
     <!-- Modal Pengajuan Izin/Sakit/Dispen -->
     <Teleport to="body">
@@ -413,7 +485,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import apiClient from '../../utils/api'
 import { Doughnut } from 'vue-chartjs'
@@ -434,7 +506,9 @@ import {
   User,
   ChevronDown,
   Settings,
-  LogOut
+  LogOut,
+  Menu,
+  Home
 } from 'lucide-vue-next'
 import {
   Chart as ChartJS,
@@ -527,6 +601,22 @@ const showToast = ref(false)
 const toastMessage = ref('')
 const toastType = ref('success')
 const showProfileMenu = ref(false)
+
+// ===== Sidebar =====
+const route = useRoute()
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
+const closeSidebar = () => { sidebarOpen.value = false }
+
+// item menu yang lagi aktif (dicocokkan dengan URL sekarang)
+const isActive = (path) => route.path === path
+
+// navigate + auto-tutup sidebar
+const sidebarNavigate = (path) => {
+  sidebarOpen.value = false
+  router.push(path)
+}
 
 const user = ref({
   name: authStore.user?.name || 'Siswa Test',
@@ -718,6 +808,7 @@ const toggleProfileMenu = () => {
 
 const handleLogout = async () => {
   showProfileMenu.value = false
+  sidebarOpen.value = false
   try {
     await authStore.logout()
   } catch (error) {
@@ -874,6 +965,7 @@ const formatDateRange = (start, end) => {
 
 // Close dropdown when clicking outside
 let clickOutsideHandler = null
+let escHandler = null
 
 onMounted(() => {
   clickOutsideHandler = (e) => {
@@ -883,6 +975,11 @@ onMounted(() => {
     }
   }
   document.addEventListener('click', clickOutsideHandler)
+
+    escHandler = (e) => {
+    if (e.key === 'Escape') closeSidebar()
+  }
+  document.addEventListener('keydown', escHandler)
   
   // Fetch riwayat pengajuan saat component dimount
   fetchPermissions()
@@ -892,6 +989,7 @@ onMounted(() => {
 onUnmounted(() => {
   if (clickOutsideHandler) {
     document.removeEventListener('click', clickOutsideHandler)
+    document.removeEventListener('keydown', escHandler)
   }
 })
 

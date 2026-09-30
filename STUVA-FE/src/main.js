@@ -7,7 +7,11 @@ import Toast from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
 import './assets/css/app-variables.css'
 import './style.css'
+import { registerSW } from 'virtual:pwa-register'
 
+registerSW({ immediate: true })
+
+createApp(App).use(router).mount('#app')
 
 const app = createApp(App)
 app.use(createPinia())

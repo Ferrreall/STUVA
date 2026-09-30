@@ -1,9 +1,96 @@
 <template>
-  <div class="dashboard-container">
+    <div class="dashboard-container" :class="{ 'sidebar-open': sidebarOpen }">
+
+        <!-- Sidebar -->
+    <div class="sidebar-overlay" @click="closeSidebar"></div>
+
+    <aside class="sidebar" :class="{ open: sidebarOpen }" @click.self="closeSidebar">
+      <div class="sidebar-head">
+        <span class="sidebar-brand">STUVA</span>
+        <button class="sidebar-close" @click="closeSidebar" aria-label="Tutup">
+          <X class="icon-sm" />
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/dashboard') }"
+          @click="sidebarNavigate('/admin/dashboard')"
+        >
+          <Home class="icon-sm" />
+          <span>Dashboard</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/siswa') }"
+          @click="sidebarNavigate('/admin/siswa')"
+        >
+          <Users class="icon-sm" />
+          <span>Kelola Siswa</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/guru') }"
+          @click="sidebarNavigate('/admin/guru')"
+        >
+          <GraduationCap class="icon-sm" />
+          <span>Kelola Guru</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/ortu') }"
+          @click="sidebarNavigate('/admin/ortu')"
+        >
+          <HeartHandshake class="icon-sm" />
+          <span>Kelola Orang Tua</span>
+        </button>
+        
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/years') }"
+          @click="sidebarNavigate('/admin/years')"
+        >
+          <CalendarDays class="icon-sm" />
+          <span>Tahun Ajaran</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/admin/profile') }"
+          @click="sidebarNavigate('/admin/profile')"
+        >
+          <User class="icon-sm" />
+          <span>Profil Saya</span>
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <button class="sidebar-item logout" @click="handleLogout">
+          <LogOut class="icon-sm" />
+          <span>Keluar</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <p class="sidebar-foot-name">{{ admin.name }}</p>
+        <p class="sidebar-foot-sub">{{ admin.username }}</p>
+      </div>
+    </aside>
+
+    <!-- ★ Page Shell: navbar + konten geser BARENG ★ -->
+    <div class="page-shell">
+
     <!-- Header -->
     <header class="header">
       <div class="header-content">
         <div class="header-left">
+          <button @click="toggleSidebar" class="sidebar-toggle" aria-label="Menu">
+            <Menu class="icon-md" />
+          </button>
           <h1 class="app-name">STUVA</h1>
         </div>
         <div class="header-right">
@@ -14,6 +101,10 @@
             <button @click="toggleProfileMenu" class="profile-button">
               <div class="avatar">
                 <User class="icon-sm" />
+              </div>
+              <div class="profile-button-text">
+                <span class="pb-name">{{ admin.name }}</span>
+                <span class="pb-sub">{{ admin.username }}</span>
               </div>
               <ChevronDown class="icon-xs chevron" :class="{ 'rotated': showProfileMenu }" />
             </button>
@@ -156,6 +247,7 @@
         </div>
       </section>
     </main>
+    </div>
 
     <!-- Modal Gambar -->
     <Teleport to="body">
@@ -184,17 +276,32 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import apiClient from '../../utils/api'
 import {
   Wifi, User, ChevronDown, Settings, LogOut,
   Users, GraduationCap, HeartHandshake, ChevronRight,
-  FileText, Calendar, X, CheckCircle, AlertTriangle
+  FileText, Calendar, X, CheckCircle, AlertTriangle,
+  Menu, Home, CalendarDays
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+// ===== Sidebar =====
+const route = useRoute()
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
+const closeSidebar = () => { sidebarOpen.value = false }
+
+const isActive = (path) => route.path === path
+
+const sidebarNavigate = (path) => {
+  sidebarOpen.value = false
+  router.push(path)
+}
 
 // ===== UI State =====
 const showProfileMenu = ref(false)
@@ -405,6 +512,7 @@ const navigateTo = (path) => {
 }
 
 const handleLogout = async () => {
+  sidebarOpen.value = false
   showProfileMenu.value = false
   try {
     await authStore.logout()
@@ -430,6 +538,7 @@ const todayLabel = new Date().toLocaleDateString('id-ID', {
 
 // ===== Lifecycle =====
 let clickOutsideHandler = null
+let escHandler = null       
 
 onMounted(() => {
   clickOutsideHandler = (e) => {
@@ -439,6 +548,10 @@ onMounted(() => {
     }
   }
   document.addEventListener('click', clickOutsideHandler)
+  escHandler = (e) => {
+    if (e.key === 'Escape') closeSidebar()
+  }
+  document.addEventListener('keydown', escHandler)
 
   fetchRequests()
   fetchStats()
@@ -447,6 +560,7 @@ onMounted(() => {
 onUnmounted(() => {
   if (clickOutsideHandler) {
     document.removeEventListener('click', clickOutsideHandler)
+    document.removeEventListener('keydown', escHandler)
   }
 })
 </script>

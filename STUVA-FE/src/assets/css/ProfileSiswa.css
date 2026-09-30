@@ -47,7 +47,7 @@
   --surface-strong: rgba(255, 255, 255, .94);
   --border-soft:    rgba(124, 58, 237, .10);
 
-  --content-max: 800px; /* profil enak dibaca nggak terlalu lebar */
+  --content-max: 1200px;
 
   --radius-sm: 14px;
   --radius-md: 22px;
@@ -939,5 +939,281 @@
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
+  }
+}
+
+/* ============================================================
+   DESKTOP: avatar hero horizontal (avatar kiri, teks kanan)
+============================================================ */
+@media (min-width: 1024px) {
+  .avatar-section {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 28px;
+    padding: 36px 40px;
+    text-align: left;
+  }
+
+  .avatar-section .avatar-large {
+    margin-bottom: 0;
+    width: 110px; height: 110px;
+    flex-shrink: 0;
+  }
+
+  /* bungkus nama + role dalam satu baris pembaca */
+  .profile-name {
+    margin: 0 0 8px 0;
+    font-size: 1.75rem;
+    text-align: left;
+  }
+
+  .profile-role {
+    align-self: flex-start;
+  }
+}
+
+/* ============================================================
+   18. SIDEBAR + HEADER PROFILE
+============================================================ */
+
+/* --- grup kiri header: toggle + back --- */
+.header-left-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar-toggle {
+  width: 38px; height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.14);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.sidebar-toggle:hover { background: rgba(255,255,255,.28); }
+.sidebar-toggle:active { transform: scale(.92); }
+
+/* user chip di kanan header */
+.header-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+.chip-name {
+  font-size: .8rem;
+  font-weight: 700;
+  color: #ffffff;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chip-sub {
+  font-size: .65rem;
+  color: rgba(255,255,255,.7);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.avatar-mini {
+  width: 36px; height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* --- sidebar (purple siswa) --- */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 260px;
+  z-index: 950;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  color: #ffffff;
+  background: linear-gradient(180deg, #241056 0%, #2e1065 55%, #3b1d84 100%);
+  box-shadow: 6px 0 40px rgba(30,10,78,.4);
+  transform: translateX(-100%);
+  transition: transform .3s var(--ease-out);
+}
+.profile-container.sidebar-open .sidebar {
+  transform: translateX(0);
+}
+
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  margin-bottom: 14px;
+}
+
+.sidebar-brand {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  background: linear-gradient(90deg, #ffffff 30%, #f5d0fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sidebar-close {
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.sidebar-close:hover { background: rgba(255,255,255,.25); transform: rotate(90deg); }
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  color: rgba(255,255,255,.72);
+  font-size: .875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+.sidebar-item:hover {
+  background: rgba(255,255,255,.1);
+  color: #ffffff;
+  padding-left: 18px;
+}
+.sidebar-item.active {
+  background: linear-gradient(135deg, var(--brand-600), var(--pink-500));
+  color: #ffffff;
+  box-shadow: 0 6px 16px -6px rgba(124,58,237,.6);
+}
+.sidebar-item.logout { color: #fda4af; }
+.sidebar-item.logout:hover { background: rgba(225,29,72,.18); color: #fecdd3; }
+
+.sidebar-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+  margin: 8px 4px;
+}
+
+/* --- overlay (HP saja) --- */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30,10,78,.45);
+  z-index: 940;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.profile-container.sidebar-open .sidebar-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================================
+   ★ HERO HORIZONTAL — avatar kiri, nama+role kanan
+============================================================ */
+@media (min-width: 1024px) {
+  .avatar-section {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 24px;
+    padding: 36px 40px;
+  }
+
+  .avatar-section .avatar-large {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  /* teks (nama + role) numpuk rapi di samping avatar */
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .hero-text .profile-name {
+    margin: 0;
+    font-size: 1.75rem;
+    text-align: left;
+  }
+
+  .hero-text .profile-role {
+    align-self: flex-start;   /* pill "Siswa" nempel kiri, di bawah nama */
+  }
+}
+
+/* ============================================================
+   19. PAGE SHELL: navbar + konten geser BARENG (ala presensi)
+============================================================ */
+.page-shell {
+  position: relative;
+  transition: margin-left .3s var(--ease-out);
+}
+
+@media (min-width: 1024px) {
+  .profile-container.sidebar-open .page-shell {
+    margin-left: 260px;
+  }
+
+  .profile-container.sidebar-open .header {
+    width: calc(100% - 32px);
+    max-width: none;
+  }
+
+  .profile-container.sidebar-open .main-content {
+    width: calc(100% - 32px);
+    max-width: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .profile-container.sidebar-open .page-shell {
+    margin-left: 0;
   }
 }

@@ -1,15 +1,84 @@
 <template>
-  <div class="profile-container">
+  <div class="profile-container" :class="{ 'sidebar-open': sidebarOpen }">
+
+    <div class="page-shell">
+
     <!-- Header -->
     <header class="header">
       <div class="header-content">
-        <button @click="goBack" class="btn-back">
-          <ChevronLeft class="icon-md" />
-        </button>
+        <div class="header-left-group">
+          <button @click="toggleSidebar" class="sidebar-toggle" aria-label="Menu">
+            <Menu class="icon-md" />
+          </button>
+        </div>
+
         <h1 class="header-title">Profil Saya</h1>
-        <div class="header-spacer"></div>
+
+        <div class="header-user-chip">
+          <span class="chip-name">{{ profile.name || 'Siswa' }}</span>
+          <span class="chip-sub">{{ profile.class_name || '-' }}</span>
+          <div class="avatar-mini">
+            <User class="icon-xs" />
+          </div>
+        </div>
       </div>
     </header>
+
+        <!-- Sidebar -->
+    <div class="sidebar-overlay" @click="closeSidebar"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }" @click.self="closeSidebar">
+      <div class="sidebar-head">
+        <span class="sidebar-brand">STUVA</span>
+        <button class="sidebar-close" @click="closeSidebar" aria-label="Tutup">
+          <X class="icon-sm" />
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/dashboard') }"
+          @click="sidebarNavigate('/siswa/dashboard')"
+        >
+          <Home class="icon-sm" />
+          <span>Dashboard</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/presensi') }"
+          @click="sidebarNavigate('/siswa/presensi')"
+        >
+          <Calendar class="icon-sm" />
+          <span>Riwayat Absen</span>
+        </button>
+
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/profile') }"
+          @click="sidebarNavigate('/siswa/profile')"
+        >
+          <User class="icon-sm" />
+          <span>Profil Saya</span>
+        </button>
+        
+        <button
+          class="sidebar-item"
+          :class="{ active: isActive('/siswa/absen') }"
+          @click="sidebarNavigate('/siswa/absen')"
+        >
+          <MapPin class="icon-sm" />
+          <span>Absen</span>
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <button class="sidebar-item logout" @click="handleLogout">
+          <LogOut class="icon-sm" />
+          <span>Keluar</span>
+        </button>
+      </nav>
+    </aside>
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-container">
@@ -33,8 +102,10 @@
     <div class="avatar-large">
       <User class="icon-xl" />
     </div>
-    <h2 class="profile-name">{{ profile.name }}</h2>
-    <p class="profile-role">{{ roleLabel }}</p>
+    <div class="hero-text">
+      <h2 class="profile-name">{{ profile.name }}</h2>
+      <p class="profile-role">{{ roleLabel }}</p>
+    </div>
   </section>
 
   <!-- Dua Kolom Kartu -->
@@ -52,13 +123,6 @@
         </div>
 
         <div v-if="!editMode" class="info-list">
-          <div class="info-item">
-            <div class="info-label">
-              <User class="icon-sm text-blue" />
-              <span>Nama Lengkap</span>
-            </div>
-            <span class="info-value">{{ profile.name || '-' }}</span>
-          </div>
 
           <div class="info-item">
             <div class="info-label">
@@ -255,6 +319,7 @@
     </button>
   </section>
 </main>
+</div>
     <!-- Password Modal -->
     <Teleport to="body">
       <div v-if="showPasswordModal" class="modal-overlay" @click="showPasswordModal = false">
@@ -325,8 +390,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import apiClient from '../../utils/api'
 import {
   ChevronLeft,
@@ -346,7 +411,9 @@ import {
   Lock,
   CheckCircle,
   AlertTriangle,
-  School
+  School,
+  Menu,
+  LogOut
 } from 'lucide-vue-next'
 
 
@@ -356,6 +423,27 @@ const roleLabel = computed(() => {
 })
 
 const router = useRouter()
+
+const route = useRoute()
+
+// ===== Sidebar =====
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
+const closeSidebar = () => { sidebarOpen.value = false }
+
+const isActive = (path) => route.path === path
+
+const sidebarNavigate = (path) => {
+  sidebarOpen.value = false
+  router.push(path)
+}
+
+const handleLogout = () => {
+  sidebarOpen.value = false
+  localStorage.clear()
+  router.push({ path: '/login', query: { logout: 'success' } })
+}
 
 const loading = ref(true)
 const error = ref(null)
@@ -496,8 +584,19 @@ const formatDate = (dateString) => {
   })
 }
 
+let escHandler = null
+
 onMounted(() => {
   fetchProfile()
+
+  escHandler = (e) => {
+    if (e.key === 'Escape') closeSidebar()
+  }
+  document.addEventListener('keydown', escHandler)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', escHandler)
 })
 </script>
 
