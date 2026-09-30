@@ -3,21 +3,12 @@ import { pingLocation } from '../services/locationService'
 
 /**
  * Composable HTML5 Geolocation + auto ping ke API.
- *
- * Status lifecycle:
- *  idle       → tracking mati
- *  locating   → sedang mengambil posisi
- *  active     → tracking berjalan & posisi didapat
- *  denied     → user menolak izin lokasi
- *  timeout    → GPS timeout
- *  unavailable→ posisi tidak tersedia (sinyal hilang)
- *  insecure   → diblokir karena non-HTTPS
  */
 export function useGeolocation(options = {}) {
   const {
-    intervalMs = 60_000,     // kirim ping ke server tiap 60 detik
-    autoPing = true,         // langsung ping begitu tracking aktif
-    pingWhenHidden = false,  // false = skip ping saat tab hidden (hemat baterai)
+    intervalMs = 60_000,
+    autoPing = true,
+    pingWhenHidden = false,
   } = options
 
   // ===== Environment checks =====
@@ -29,30 +20,28 @@ export function useGeolocation(options = {}) {
 
   // ===== Reactive state =====
   const status = ref('idle')
-  const coords = ref(null)      // { latitude, longitude, accuracy, timestamp }
+  const coords = ref(null)
   const error = ref(null)
   const isTracking = ref(false)
   const lastPingAt = ref(null)
-  const lastPingOk = ref(null)  // true/false/null
+  const lastPingOk = ref(null)
   const pingCount = ref(0)
 
-
-    // ===== Baterai (Battery Status API — hanya Chromium: Chrome/Edge/Opera) =====
-  const batteryLevel = ref(null)   // 0-100, null kalau browser nggak support
+  // ===== Baterai =====
+  const batteryLevel = ref(null)
   let batteryManager = null
 
   const getBatteryLevel = async () => {
     if (!('getBattery' in navigator)) return null
     try {
       const battery = await navigator.getBattery()
-      return Math.round(battery.level * 100)   // integer 0-100
+      return Math.round(battery.level * 100)
     } catch (e) {
       console.warn('Gagal mengambil status baterai:', e)
       return null
     }
   }
 
-  // dengarkan perubahan level biar tampilan selalu segar
   const bindBatteryEvents = (battery) => {
     batteryManager = battery
     const update = () => { batteryLevel.value = Math.round(battery.level * 100) }
@@ -68,7 +57,6 @@ export function useGeolocation(options = {}) {
     batteryManager = null
   }
 
-  // internal timers
   let watchId = null
   let pingTimer = null
 
@@ -82,7 +70,6 @@ export function useGeolocation(options = {}) {
     insecure:    'Butuh HTTPS',
   }[status.value] || status.value))
 
-  // ===== Error mapping (spesifikasi: denied / timeout / unsupported) =====
   const describeError = (err) => {
     switch (err.code) {
       case err.PERMISSION_DENIED:
@@ -96,10 +83,11 @@ export function useGeolocation(options = {}) {
     }
   }
 
+  // UBAH: Set enableHighAccuracy ke false & berikan tolerance maximumAge agar responsif
   const geoOptions = {
-    enableHighAccuracy: true, // presisi tinggi (GPS)
-    timeout: 10000,           // maksimal 10 detik
-    maximumAge: 0,            // jangan pakai cache posisi lama
+    enableHighAccuracy: false, 
+    timeout: 10000,
+    maximumAge: 30000, // Gunakan cache lokasi 30 dtk terakhir agar cepat
   }
 
   const handleSuccess = (position) => {
@@ -110,7 +98,8 @@ export function useGeolocation(options = {}) {
       timestamp: position.timestamp,
     }
     error.value = null
-    if (isTracking.value) status.value = 'active'
+    // PERBAIKAN: Selalu ubah status ke 'active' saat lokasi berhasil didapat!
+    status.value = 'active'
   }
 
   const handleError = (err) => {
@@ -118,26 +107,26 @@ export function useGeolocation(options = {}) {
 
     if (err.code === err.PERMISSION_DENIED) {
       status.value = 'denied'
-      stopTracking() // percuma lanjut kalau izin ditolak
+      stopTracking()
     } else if (err.code === err.TIMEOUT) {
-      status.value = 'timeout' // tracking tetap jalan, mungkin sinyal balik
+      status.value = 'timeout'
     } else {
       status.value = 'unavailable'
     }
   }
 
-    // ===== Ping ke API =====
+  // ===== Ping ke API =====
   const sendPing = async () => {
     if (!coords.value) return null
-    if (!pingWhenHidden && document.hidden) return null // skip saat tab tidak terlihat
+    if (!pingWhenHidden && document.hidden) return null
 
     try {
-      const battery = await getBatteryLevel()   // ← ambil baterai saat ping
+      const battery = await getBatteryLevel()
 
       const res = await pingLocation({
         latitude: coords.value.latitude,
         longitude: coords.value.longitude,
-        battery_level: battery,                  // ← ikut dikirim (bisa null)
+        battery_level: battery,
       })
       lastPingAt.value = new Date()
       lastPingOk.value = true
@@ -151,10 +140,6 @@ export function useGeolocation(options = {}) {
     }
   }
 
-  /**
-   * Ambil posisi SEKALI (getCurrentPosition) lalu ping ke API.
-   * Berguna untuk "absen lokasi" atau test koneksi.
-   */
   const pingOnce = () => new Promise((resolve, reject) => {
     if (!isSupported) {
       error.value = 'Browser/perangkat tidak mendukung Geolocation.'
@@ -169,11 +154,11 @@ export function useGeolocation(options = {}) {
     status.value = 'locating'
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        handleSuccess(pos)
+        handleSuccess(pos) // Sekarang status otomatis menjadi 'active' di sini
         try {
           resolve(await sendPing())
         } catch (_) {
-          resolve(null) // posisi berhasil tapi ping gagal → jangan hard-fail
+          resolve(null)
         }
       },
       (err) => {
@@ -184,10 +169,6 @@ export function useGeolocation(options = {}) {
     )
   })
 
-  /**
-   * Aktifkan tracking berkelanjutan:
-   * watchPosition (posisi real-time) + setInterval (ping berkala ke API).
-   */
   const startTracking = async () => {
     if (!isSupported) {
       error.value = 'Browser/perangkat tidak mendukung Geolocation.'
@@ -198,12 +179,11 @@ export function useGeolocation(options = {}) {
       error.value = 'Geolocation diblokir: aplikasi harus diakses via HTTPS (atau localhost).'
       return false
     }
-    if (isTracking.value) return true // sudah jalan
+    if (isTracking.value) return true
 
     isTracking.value = true
     status.value = 'locating'
 
-        // cek baterai sekali + pasang listener
     getBatteryLevel().then(lvl => { batteryLevel.value = lvl })
     if ('getBattery' in navigator) {
       navigator.getBattery()
@@ -211,15 +191,12 @@ export function useGeolocation(options = {}) {
         .catch(() => {})
     }
 
-    // 1) pantau perubahan posisi terus-menerus
     watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, geoOptions)
 
-    // 2) ping pertama langsung (jangan tunggu interval)
     if (autoPing) {
-      try { await pingOnce() } catch (_) { /* error sudah di-set handleError */ }
+      try { await pingOnce() } catch (_) {}
     }
 
-    // 3) ping berkala sesuai interval
     if (intervalMs > 0) {
       pingTimer = setInterval(() => {
         if (coords.value) sendPing().catch(() => {})
@@ -238,8 +215,7 @@ export function useGeolocation(options = {}) {
     if (pingTimer) {
       clearInterval(pingTimer)
       pingTimer = null
-
-    unbindBatteryEvents()
+      unbindBatteryEvents()
     }
     if (['active', 'locating', 'timeout'].includes(status.value)) {
       status.value = 'idle'
@@ -251,13 +227,10 @@ export function useGeolocation(options = {}) {
     else startTracking()
   }
 
-  // auto-cleanup kalau dipakai di dalam component setup
   if (getCurrentInstance()) {
     onUnmounted(stopTracking)
   }
 
-    // ===== Ambil baterai SEGERA saat composable dipakai =====
-  // (nggak nunggu tracking dinyalain)
   getBatteryLevel().then(lvl => { batteryLevel.value = lvl })
   if ('getBattery' in navigator) {
     navigator.getBattery()
@@ -266,10 +239,8 @@ export function useGeolocation(options = {}) {
   }
 
   return {
-    // env
     isSupported,
     isSecure,
-    // state
     status,
     statusLabel,
     coords,
@@ -280,7 +251,6 @@ export function useGeolocation(options = {}) {
     pingCount,
     batteryLevel,
     getBatteryLevel,
-    // actions
     pingOnce,
     startTracking,
     stopTracking,
